@@ -70,14 +70,21 @@ async function captureErrorScreenshot(
 
 async function hookSlack(message: string): Promise<void> {
   const koreaTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
-  const payload: ISlackMessage = {
-    text: `> ${koreaTime} *로또 자동 구매 봇 알림* \n ${message}`,
+  // const payload: ISlackMessage = {
+  // text: `> ${koreaTime} *로또 자동 구매 봇 알림* \n ${message}`,
+  // };
+  const payload: any = {
+    attachments: [
+      {
+        title: '알람',
+        text: `> ${koreaTime} *로또 자동 구매 봇 알림* \n ${message}`,
+        color: '#36a64f',
+      },
+    ],
   };
 
   try {
-    await axios.post(CONFIG.SLACK_API_URL, payload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    await axios.post(CONFIG.SLACK_API_URL, payload);
   } catch (error) {
     console.error('Slack 메시지 전송 실패:', error);
   }
@@ -188,17 +195,19 @@ async function buyLotto(): Promise<void> {
         }
       });
 
-      const moneyInfo = await page.$eval(
-        'ul.information',
-        (el) => el.textContent,
+      // 사용자 이름 추출: ul.information의 첫번째 li의 strong 태그 선택
+      const userName = await page.$eval(
+        'ul.information li:first-child strong',
+        (el) => el.textContent?.trim() || '',
       );
-      const [userName, , balanceText] = moneyInfo?.split('\n') || [
-        '사용자',
-        '',
-        '0원',
-      ];
-      const balance = parseInt(balanceText?.replace(/[,원]/g, '') || '0');
 
+      // 예치금 추출: ul.information의 li.money 안에서 depositListView 링크의 strong 태그 선택
+      const balanceText = await page.$eval(
+        'ul.information li.money a[href*="depositListView"] strong',
+        (el) => el.textContent?.trim() || '',
+      );
+
+      const balance = parseInt(balanceText.replace(/[,원]/g, ''));
       debug(`사용자: ${userName}, 예치금: ${balance}원`);
       await hookSlack(`로그인 사용자: ${userName}, 예치금: ${balance}`);
 
