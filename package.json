@@ -2,14 +2,15 @@
   "name": "auto-lotto-genie",
   "version": "1.0.0",
   "description": "로또 자동 구매 프로그램",
-  "main": "src/buyLotto.ts",
+  "main": "src/index.ts",
   "scripts": {
-    "lotto": "ts-node src/buyLotto.ts",
-    "lotto:headless": "ts-node src/buyLotto.ts --headless",
-    "lotto:debug": "ts-node src/buyLotto.ts --debug",
-    "lotto:headless-debug": "ts-node src/buyLotto.ts --headless --debug",
-    "lotto:data": "ts-node src/lottoData.ts",
-    "lotto:ai": "ts-node src/testLottoAI.ts"
+    "start": "ts-node src/index.ts",
+    "lotto": "ts-node src/puppeteer/index.ts",
+    "lotto:headless": "ts-node src/puppeteer/index.ts --headless",
+    "lotto:debug": "ts-node src/puppeteer/index.ts --debug",
+    "lotto:headless-debug": "ts-node src/puppeteer/index.ts --headless --debug",
+    "lotto:data": "ts-node src/data/index.ts",
+    "lotto:ai": "ts-node src/ai/index.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
