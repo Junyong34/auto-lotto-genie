@@ -45,7 +45,7 @@ jobs:
           wget https://chromedriver.storage.googleapis.com/100.0.4896.20/chromedriver_linux64.zip
           unzip ./chromedriver_linux64.zip
           sudo mv chromedriver /usr/local/bin/
-          # echo "CHROME_PATH=$(which google-chrome)" >> $GITHUB_ENV
+          echo "CHROME_PATH=$(which google-chrome)" >> $GITHUB_ENV
           echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
 
       - name: 로또 구매 실행
@@ -60,6 +60,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PUPPETEER_TIMEOUT: 30000
+          PUPPETEER_EXECUTABLE_PATH: ${{ env.CHROME_PATH }}
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
