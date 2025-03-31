@@ -40,11 +40,13 @@ jobs:
 
       - name: Chrome 설치
         run: |
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
-          echo "CHROME_PATH=$(which google-chrome)" >> $GITHUB_ENV
+          wget https://chromedriver.storage.googleapis.com/100.0.4896.20/chromedriver_linux64.zip
+          unzip ./chromedriver_linux64.zip
+          sudo mv chromedriver /usr/local/bin/
+          # echo "CHROME_PATH=$(which google-chrome)" >> $GITHUB_ENV
+          echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
 
       - name: 로또 구매 실행
         env:
@@ -57,4 +59,10 @@ jobs:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: pnpm lotto:headless
+          PUPPETEER_TIMEOUT: 30000
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_on: error
+          command: pnpm lotto:headless
