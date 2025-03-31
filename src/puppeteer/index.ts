@@ -60,7 +60,9 @@ async function captureErrorScreenshot(
       fullPage: true,
     });
     debug(`[${stepName}] 오류 발생 스크린샷 저장: ${errorScreenshotPath}`);
-    // await hookSlack(`[${stepName}] 오류 발생: ${error.message} - 스크린샷: ${errorScreenshotPath}`);
+    await hookSlack(
+      `[${stepName}] 오류 발생: ${error.message} - 스크린샷: ${errorScreenshotPath}`,
+    );
   } catch (screenshotError) {
     debug(`[${stepName}] 오류 발생 스크린샷 저장 실패:`, screenshotError);
   }
@@ -82,9 +84,9 @@ async function hookSlack(message: string): Promise<void> {
 }
 
 async function buyLotto(): Promise<void> {
-  //   await hookSlack(
-  //     `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! 나머지는 나의 로또 번호`,
-  //   );
+  await hookSlack(
+    `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! 나머지는 나의 로또 번호`,
+  );
 
   // 로또 AI로부터 추천번호 받아오기
   const geminiResult = await getLottoRecommendation({ provider: 'google' });
@@ -198,7 +200,7 @@ async function buyLotto(): Promise<void> {
       const balance = parseInt(balanceText?.replace(/[,원]/g, '') || '0');
 
       debug(`사용자: ${userName}, 예치금: ${balance}원`);
-      // await hookSlack(`로그인 사용자: ${userName}, 예치금: ${balance}`);
+      await hookSlack(`로그인 사용자: ${userName}, 예치금: ${balance}`);
 
       if (1000 * CONFIG.COUNT > balance) {
         throw new Error(
@@ -311,7 +313,7 @@ async function buyLotto(): Promise<void> {
   } catch (error) {
     console.error('상세 에러:', error);
     debug('에러 발생:', error);
-    // await hookSlack(error.message);
+    await hookSlack(error as unknown as string);
     throw error;
   } finally {
     if (debugMode) {
