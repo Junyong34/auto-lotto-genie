@@ -182,7 +182,7 @@ async function buyLotto(): Promise<void> {
         pwInputExists: loginFormExists.hasPwInput,
       });
 
-      if (!loginFormExists.hasIdInput || !loginFormExists.pwInputExists) {
+      if (!loginFormExists.hasIdInput || !loginFormExists.hasPwInput) {
         debug(
           '로그인 폼을 찾을 수 없음. 현재 HTML:',
           loginFormExists.html.substring(0, 500) + '...',
