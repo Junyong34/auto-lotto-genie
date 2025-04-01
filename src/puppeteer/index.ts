@@ -105,8 +105,15 @@ async function buyLotto(): Promise<void> {
     headless: headlessMode ? 'new' : false,
     defaultViewport: null,
     slowMo: debugMode ? 100 : 50,
-    args: ['--window-size=1920,1080', '--disable-popup-blocking'],
-    // args: ['--disable-popup-blocking'] // 팝업 차단 비활성화
+    args: [
+      '--window-size=1920,1080',
+      '--disable-popup-blocking',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--disable-gpu',
+    ],
     devtools: debugMode,
     executablePath: process.env.CHROME_PATH || undefined,
   });
@@ -127,12 +134,15 @@ async function buyLotto(): Promise<void> {
     }
 
     // DOM 요소를 찾지 못할 때 대기 시간 설정
-    await page.setDefaultTimeout(3000); // 3초
+    await page.setDefaultTimeout(10000); // 10초로 증가
 
     // 1. 로그인 단계
     try {
       debug('로그인 페이지로 이동');
-      await page.goto('https://dhlottery.co.kr/user.do?method=login');
+      await page.goto('https://dhlottery.co.kr/user.do?method=login', {
+        waitUntil: 'networkidle0',
+        timeout: 10000,
+      });
 
       // 디버그 모드인 경우만 동작 중지 및 스크린샷
       if (debugMode) {
@@ -152,6 +162,34 @@ async function buyLotto(): Promise<void> {
         debug(`스크린샷 저장: ${screenshotPath}`);
       }
 
+      debug('페이지 로딩 상태 확인');
+      const pageTitle = await page.title();
+      debug('현재 페이지 제목:', pageTitle);
+
+      // 로그인 폼이 실제로 존재하는지 확인
+      const loginFormExists = await page.evaluate(() => {
+        const idInput = document.querySelector('[placeholder="아이디"]');
+        const pwInput = document.querySelector('[placeholder="비밀번호"]');
+        return {
+          hasIdInput: !!idInput,
+          hasPwInput: !!pwInput,
+          html: document.documentElement.innerHTML,
+        };
+      });
+
+      debug('로그인 폼 상태:', {
+        idInputExists: loginFormExists.hasIdInput,
+        pwInputExists: loginFormExists.hasPwInput,
+      });
+
+      if (!loginFormExists.hasIdInput || !loginFormExists.pwInputExists) {
+        debug(
+          '로그인 폼을 찾을 수 없음. 현재 HTML:',
+          loginFormExists.html.substring(0, 500) + '...',
+        );
+        throw new Error('로그인 폼을 찾을 수 없습니다.');
+      }
+
       debug('로그인 시도...');
       await page.type('[placeholder="아이디"]', CONFIG.USER_ID);
       debug('아이디 입력 완료');
@@ -159,7 +197,7 @@ async function buyLotto(): Promise<void> {
       // 디버그 모드에서만 HTML 저장
       if (debugMode) {
         const html = await page.content();
-        debug('현재 페이지 HTML 길이:', html.length);
+        // debug('현재 페이지 HTML 길이:', html.length);
       }
 
       await page.type('[placeholder="비밀번호"]', CONFIG.USER_PW);
