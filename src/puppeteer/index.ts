@@ -2,8 +2,12 @@ import puppeteer, { Page, Browser, ConsoleMessage, Target } from 'puppeteer';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko'; // 한국어 로케일 추가
+import weekOfYear from 'dayjs/plugin/weekOfYear'; // 주차 계산을 위한 플러그인
 import dotenv from 'dotenv';
 import { getLottoRecommendation } from '../ai';
+
+// dayjs 플러그인 설정
+dayjs.extend(weekOfYear);
 
 // .env 파일 로드
 dotenv.config();
@@ -449,14 +453,22 @@ async function executeSteps(
 
 // 메인 실행 함수
 async function buyLotto(): Promise<void> {
+  // 현재 연도의 주차 번호 계산
+  const currentWeek = dayjs().week();
+  
+  // 주차 번호에 따라 AI 제공자 결정 (짝수 주: Gemini, 홀수 주: OpenAI)
+  const aiProvider = currentWeek % 2 === 0 ? 'google' : 'openai';
+  const aiProviderName = aiProvider === 'google' ? 'Gemini AI' : 'OpenAI';
+  
   await hookSlack(
-    `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! 나머지는 나의 로또 번호`,
+    `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! (이번 주 AI: ${aiProviderName}) 나머지는 나의 로또 번호`,
   );
 
   try {
-    // 로또 AI로부터 추천번호 받아오기
-    const geminiResult = await getLottoRecommendation({ provider: 'google' });
-    const recommendNumbers = geminiResult.recommendations;
+    // 로또 AI로부터 추천번호 받아오기 - 격주로 변경되는 provider 사용
+    console.log(`\n----- ${aiProviderName} 사용 -----`);
+    const aiResult = await getLottoRecommendation({ provider: aiProvider });
+    const recommendNumbers = aiResult.recommendations;
 
     // 실행할 단계 정의
     const steps: IStep[] = [
