@@ -162,7 +162,7 @@ async function loginStep(page: Page): Promise<void> {
     // 디버그 모드 처리
     if (debugMode) {
       await page.evaluate(() => {
-        debugger;
+        // debugger;
       });
 
       const screenshotPath = `./src/screens-images/debug/login-debug-${dayjs().format(
@@ -367,10 +367,17 @@ async function purchaseLottoStep(page: Page): Promise<void> {
 
   try {
     await page.click('input[value="구매하기"]');
-    await page.waitForNetworkIdle();
 
-    await page.waitForSelector('input[type="button"].button.lrg.confirm');
-    await page.click('input[type="button"].button.lrg.confirm');
+    await page.waitForSelector('#popupLayerConfirm', {
+      visible: true,
+      timeout: 3000,
+    });
+    await page.evaluate(() => {
+      const element = document.querySelector(
+        `#popupLayerConfirm input[type="button"][value="확인"]`,
+      ) as any;
+      if (element) element.click();
+    });
     await page.click('input[name="closeLayer"]');
 
     await hookSlack(
