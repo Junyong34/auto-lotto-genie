@@ -369,9 +369,8 @@ async function purchaseLottoStep(page: Page): Promise<void> {
     await page.click('input[value="구매하기"]');
     await page.waitForNetworkIdle();
 
-    await await page.click(
-      'input.button.lrg.confirm[type="button"][value="확인"]',
-    );
+    await page.waitForSelector('input[type="button"].button.lrg.confirm');
+    await page.click('input[type="button"].button.lrg.confirm');
     await page.click('input[name="closeLayer"]');
 
     await hookSlack(
