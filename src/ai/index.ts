@@ -115,7 +115,7 @@ async function getOpenAILottoRecommendation(): Promise<number[][]> {
       throw new Error('OpenAI에서 응답을 받지 못했습니다.');
     }
 
-    // JSON 추출 (문자열에서 JSON 부분만 추출)
+    // JSON 추출 (문자열에서 2차 배열 부분만 추출)
     const jsonMatch = responseText.match(/\[\s*\[.*\]\s*\]/s);
     if (!jsonMatch) {
       throw new Error('응답에서 JSON 형식을 찾을 수 없습니다.');
