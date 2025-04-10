@@ -437,7 +437,7 @@ async function executeSteps(
     console.error('상세 에러:', error);
     debug('에러 발생:', error);
     await hookSlack(error instanceof Error ? error.message : String(error));
-    throw error;
+    process.exit(1); // Git Action에서 실패로 인식되도록 종료 코드 1 반환
   } finally {
     if (debugMode) {
       debug(
@@ -455,11 +455,11 @@ async function executeSteps(
 async function buyLotto(): Promise<void> {
   // 현재 연도의 주차 번호 계산
   const currentWeek = dayjs().week();
-  
+
   // 주차 번호에 따라 AI 제공자 결정 (짝수 주: Gemini, 홀수 주: OpenAI)
   const aiProvider = currentWeek % 2 === 0 ? 'google' : 'openai';
   const aiProviderName = aiProvider === 'google' ? 'Gemini AI' : 'OpenAI';
-  
+
   await hookSlack(
     `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! (이번 주 AI: ${aiProviderName}) 나머지는 나의 로또 번호`,
   );
