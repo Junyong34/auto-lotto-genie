@@ -1,4 +1,4 @@
-name: 자동 로또 구매
+name: 자동 로또 구매(SH)
 
 on:
   schedule:
