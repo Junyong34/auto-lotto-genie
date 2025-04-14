@@ -90,20 +90,23 @@ pnpm run lotto:ai
 ```
 auto-lotto-genie/
 ├── src/
-│   ├── buyLotto.ts          # 메인 실행 파일 (로또 구매 자동화)
-│   ├── lottoAI.ts           # AI 로또 번호 추천 로직
-│   ├── lottoData.ts         # 로또 데이터 수집 및 분석
 │   ├── index.ts             # 프로그램 진입점
 │   ├── utils.ts             # 유틸리티 함수
+│   ├── ai/                  # AI 관련 로직 디렉토리
 │   ├── config/              # 설정 파일 디렉토리
-│   ├── prompts/             # AI 프롬프트 정의
-│   ├── screens-images/      # 스크린샷 저장 디렉토리
-│   ├── types/               # 타입 정의
 │   ├── controllers/         # 컨트롤러
-│   └── tests/               # 테스트 코드
+│   ├── data/                # 데이터 처리 관련 로직
+│   ├── prompts/             # AI 프롬프트 정의
+│   ├── puppeteer/           # 웹 자동화 관련 로직
+│   ├── screens-images/      # 스크린샷 저장 디렉토리
+│   ├── tests/               # 테스트 코드
+│   ├── types/               # 타입 정의
+│   └── utils/               # 유틸리티 함수 모듈
 ├── .env.example             # 환경 변수 예제 파일
 ├── .env                     # 환경 변수 파일 (개인 설정)
 ├── package.json             # 프로젝트 설정 및 의존성
+├── docker-compose.yml       # Docker 구성 파일
+├── Dockerfile               # Docker 이미지 정의
 └── tsconfig.json            # TypeScript 설정
 ```
 
