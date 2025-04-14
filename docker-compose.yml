@@ -1,13 +1,15 @@
 version: '3'
 
 services:
-  menu-ocr-notifier:
+  auto-lotto-genie:
     build: .
-    ports:
-      - '3000:3890'
     restart: unless-stopped
     environment:
-      - PORT=3890
       - NODE_ENV=production
     volumes:
+      - ./.env:/app/.env
       - ./logs:/app/logs
+    # Puppeteer가 Chrome을 실행할 수 있도록 필요한 설정들 추가
+    cap_add:
+      - SYS_ADMIN
+    shm_size: 1gb
