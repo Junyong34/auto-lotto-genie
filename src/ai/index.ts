@@ -29,7 +29,10 @@ async function getGeminiLottoRecommendation(): Promise<number[][]> {
 
   try {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    // const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-pro-exp-03-25',
+    });
 
     // 로또 당첨 번호 데이터 가져오기
     const lottoData = await getLottoWinningNumbers();
@@ -82,6 +85,10 @@ async function getOpenAILottoRecommendation(): Promise<number[][]> {
   try {
     const openai = new OpenAI({
       apiKey: OPENAI_API_KEY,
+      // organization: 'org-abc123xyz456', // 선택
+      // baseURL: 'https://api.openai.com/v1', // 기본값
+      // timeout: 10000, // 10초 타임아웃
+      // maxRetries: 3, // 최대 3회 재시도
     });
 
     // 로또 당첨 번호 데이터 가져오기
@@ -98,6 +105,13 @@ async function getOpenAILottoRecommendation(): Promise<number[][]> {
       lottoHistoryData,
     ).replace('{CALCULATE_PROMPT}', calculatePrompt);
 
+    // openai.chat.completions.create(); // GPT 모델 채팅 API
+    // openai.images.generate(); // DALL·E 이미지 생성
+    // openai.embeddings.create(); // 텍스트 임베딩
+    // openai.files.create(); // 파일 업로드
+    // openai.fineTuning.jobs.create(); // 파인튜닝
+    // openai.audio.transcriptions.create(); // Whisper 음성 텍스트 변환
+
     const completion = await openai.chat.completions.create({
       model: 'o3-mini',
       messages: [
@@ -107,7 +121,16 @@ async function getOpenAILottoRecommendation(): Promise<number[][]> {
         },
         { role: 'user', content: prompt },
       ],
-      //   temperature: 0.7,
+      //     messages: [...],                // 대화 내용 배열
+      // temperature: 0.7,               // 창의성 조절 (0.0 ~ 2.0)
+      // top_p: 1.0,                     // nucleus sampling (1.0 권장)
+      // n: 1,                           // 응답 개수
+      // stream: false,                 // 스트리밍 응답 사용 여부
+      // stop: ['\n'],                   // 응답 중단 기준
+      // max_tokens: 100,                // 응답 최대 토큰 수
+      // presence_penalty: 0,           // 새로운 주제 생성 유도 (값 높을수록 참신한 응답 유도)
+      // frequency_penalty: 0,          // 반복 방지 (값 높을수록 반복 억제)
+      // user: 'user-id'                // 사용자 ID (로깅 및 abuse 방지용)
     });
 
     const responseText = completion.choices[0].message.content;
@@ -190,15 +213,18 @@ export async function getLottoRecommendation(
 }
 
 // 테스트 호출 (필요 시 주석 해제)
-// async function test() {
-//   try {
-//     // Google Gemini 사용
-//     await getLottoRecommendation({ provider: 'google' });
-//
-//     // OpenAI 사용
-//     await getLottoRecommendation({ provider: 'openai' });
-//   } catch (error) {
-//     console.error('테스트 오류:', error);
-//   }
-// }
-// test();
+async function test() {
+  try {
+    // Google Gemini 사용
+    // await getLottoRecommendation({ provider: 'google' });
+    console.log('\n----- Google Gemini AI 사용 -----');
+    const geminiResult = await getLottoRecommendation({ provider: 'google' });
+    console.log('Gemini 추천 결과:', geminiResult.recommendations);
+
+    // // OpenAI 사용
+    // await getLottoRecommendation({ provider: 'openai' });
+  } catch (error) {
+    console.error('테스트 오류:', error);
+  }
+}
+test();

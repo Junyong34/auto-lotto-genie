@@ -1,4 +1,4 @@
-import { getLottoRecommendation } from '../lottoAI';
+import { getLottoRecommendation } from '../ai';
 
 async function testLottoAI() {
   console.log('===== AI 로또 번호 추천 테스트 시작 =====');
@@ -9,8 +9,8 @@ async function testLottoAI() {
     console.log('Gemini 추천 결과:', geminiResult.recommendations);
 
     console.log('\n----- OpenAI 사용 -----');
-    const openaiResult = await getLottoRecommendation({ provider: 'openai' });
-    console.log('OpenAI 추천 결과:', openaiResult.recommendations);
+    // const openaiResult = await getLottoRecommendation({ provider: 'openai' });
+    // console.log('OpenAI 추천 결과:', openaiResult.recommendations);
 
     console.log('\n===== 테스트 완료 =====');
   } catch (error) {
