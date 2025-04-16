@@ -38,17 +38,26 @@ jobs:
       - name: 의존성 설치
         run: pnpm install
 
-        # https://github.com/GoogleChromeLabs/chrome-for-testing/blob/main/data/latest-versions-per-milestone-with-downloads.json
       - name: Chrome 설치
         run: |
+          # 1) Chrome for Testing 124 다운로드 & 압축 해제
           wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chrome-linux64.zip
           unzip chrome-linux64.zip
-          sudo mv chrome-linux64/* /usr/local/bin/
+
+          # 2) 전체 폴더를 /opt/chrome-124 로 이동 (리소스 포함)
+          sudo mv chrome-linux64 /opt/chrome-124
+          sudo chmod -R a+rX /opt/chrome-124
+
+          # 3) Chromedriver 다운로드 & 설치
           wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chromedriver-linux64.zip
           unzip chromedriver-linux64.zip
-          sudo mv chromedriver /usr/local/bin/
-          echo "CHROME_PATH=/usr/local/bin/chrome" >> $GITHUB_ENV
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+
+          # 4) 환경 변수 등록
+          echo "CHROME_PATH=/opt/chrome-124/chrome" >> $GITHUB_ENV
           echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
+
       - name: 로또 구매 실행
         env:
           LOTTO_USER_ID: ${{ secrets.LOTTO_USER_ID_SH }}
