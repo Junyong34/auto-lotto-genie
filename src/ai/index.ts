@@ -1,10 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
-import { IAIOptions, ILottoRecommendation } from '../types';
 import { getLottoWinningNumbers, convertToNumberArray } from '../data';
 import { loadPromptConfig } from '../config/promptConfig';
 import { LOTTO_GENERATION_PROMPT, LOTTO_SYSTEM_PROMPT } from './prompts';
+import type { IAIOptions, ILottoRecommendation } from '../types';
 
 // 환경 변수 로드
 dotenv.config();
@@ -29,10 +29,10 @@ async function getGeminiLottoRecommendation(): Promise<number[][]> {
 
   try {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    // const model = genAI.getGenerativeModel({
-    // model: 'gemini-2.5-pro-exp-03-25',
-    // });
+    // const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-pro-exp-03-25',
+    });
 
     // 로또 당첨 번호 데이터 가져오기
     const lottoData = await getLottoWinningNumbers();
