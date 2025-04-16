@@ -374,9 +374,13 @@ async function purchaseLottoStep(page: Page): Promise<void> {
 
     try {
       // 타임아웃 시간을 10초로 늘림
-      await page.waitForSelector('#popupLayerConfirm', {
-        timeout: 10000,
-      });
+      await page.waitForFunction(
+        () => {
+          const el = document.querySelector('#popupLayerConfirm');
+          return el && getComputedStyle(el).display !== 'none';
+        },
+        { timeout: 10000 },
+      );
       await page.evaluate(() => {
         const element = document.querySelector(
           `#popupLayerConfirm input[type="button"][value="확인"]`,
