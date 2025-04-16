@@ -42,7 +42,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
-          wget https://chromedriver.storage.googleapis.com/100.0.4896.20/chromedriver_linux64.zip
+          wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/124.0.6367.18/linux64/chrome-linux64.zip
           unzip ./chromedriver_linux64.zip
           sudo mv chromedriver /usr/local/bin/
           echo "CHROME_PATH=$(which google-chrome)" >> $GITHUB_ENV
