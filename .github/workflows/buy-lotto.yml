@@ -41,12 +41,10 @@ jobs:
         # https://github.com/GoogleChromeLabs/chrome-for-testing/blob/main/data/latest-versions-per-milestone-with-downloads.json
       - name: Chrome 설치
         run: |
-          wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chrome-linux64.zip
-          unzip chrome-linux64.zip
-          sudo mv chrome-linux64/* /usr/local/bin/
           wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chromedriver-linux64.zip
           unzip chromedriver-linux64.zip
-          sudo mv chromedriver /usr/local/bin/
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
           echo "CHROME_PATH=/usr/local/bin/chrome" >> $GITHUB_ENV
           echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
 
