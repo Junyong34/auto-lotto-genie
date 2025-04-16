@@ -38,16 +38,17 @@ jobs:
       - name: 의존성 설치
         run: pnpm install
 
+        # https://github.com/GoogleChromeLabs/chrome-for-testing/blob/main/data/latest-versions-per-milestone-with-downloads.json
       - name: Chrome 설치
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-          wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/124.0.6367.18/linux64/chrome-linux64.zip
-          unzip ./chromedriver_linux64.zip
+          wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chrome-linux64.zip
+          unzip chrome-linux64.zip
+          sudo mv chrome-linux64/* /usr/local/bin/
+          wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chromedriver-linux64.zip
+          unzip chromedriver-linux64.zip
           sudo mv chromedriver /usr/local/bin/
-          echo "CHROME_PATH=$(which google-chrome)" >> $GITHUB_ENV
+          echo "CHROME_PATH=/usr/local/bin/chrome" >> $GITHUB_ENV
           echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
-
       - name: 로또 구매 실행
         env:
           LOTTO_USER_ID: ${{ secrets.LOTTO_USER_ID_SH }}
