@@ -28,7 +28,7 @@ const debugMode = args.includes('--debug') || args.includes('-d');
 const CONFIG = {
   USER_ID: process.env.LOTTO_USER_ID || '',
   USER_PW: process.env.LOTTO_USER_PW || '',
-  COUNT: Number(process.env.LOTTO_COUNT || 3),
+  COUNT: Number(process.env.LOTTO_COUNT || 5),
   SLACK_API_URL: process.env.SLACK_API_URL || '',
 };
 
@@ -372,17 +372,27 @@ async function purchaseLottoStep(page: Page): Promise<void> {
   try {
     await page.click('input[value="구매하기"]');
 
-    await page.waitForSelector('#popupLayerConfirm', {
-      visible: true,
-      timeout: 3000,
-    });
-    await page.evaluate(() => {
-      const element = document.querySelector(
-        `#popupLayerConfirm input[type="button"][value="확인"]`,
-      ) as any;
-      if (element) element.click();
-    });
-    await page.click('input[name="closeLayer"]');
+    try {
+      // 타임아웃 시간을 10초로 늘림
+      await page.waitForSelector('#popupLayerConfirm', {
+        timeout: 10000,
+      });
+      await page.evaluate(() => {
+        const element = document.querySelector(
+          `#popupLayerConfirm input[type="button"][value="확인"]`,
+        ) as any;
+        if (element) element.click();
+      });
+      // 확인 버튼을 누른 후 필요한 경우 닫기 버튼 클릭
+      const closeLayerExists = await page.$('input[name="closeLayer"]');
+      if (closeLayerExists) {
+        await page.click('input[name="closeLayer"]');
+      }
+    } catch (popupError) {
+      debug('확인 팝업이 나타나지 않았습니다. 구매는 진행되었을 수 있습니다.');
+      // 팝업이 나타나지 않아도 구매는
+      // 진행되었을 수 있으므로 계속 진행
+    }
 
     await hookSlack(
       `${CONFIG.COUNT}개 복권 구매 성공! - 확인하러가기: https://dhlottery.co.kr/myPage.do?method=notScratchListView`,

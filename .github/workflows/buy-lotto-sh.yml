@@ -52,7 +52,7 @@ jobs:
         env:
           LOTTO_USER_ID: ${{ secrets.LOTTO_USER_ID_SH }}
           LOTTO_USER_PW: ${{ secrets.LOTTO_USER_PW_SH }}
-          LOTTO_COUNT: ${{ secrets.LOTTO_COUNT || 3 }}
+          LOTTO_COUNT: ${{ secrets.LOTTO_COUNT || 5 }}
           SLACK_API_URL: ${{ secrets.SLACK_API_URL }}
           CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
@@ -64,6 +64,6 @@ jobs:
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 3
+          max_attempts: 2
           retry_on: error
           command: pnpm lotto:headless
