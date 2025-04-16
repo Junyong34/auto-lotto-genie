@@ -394,15 +394,16 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       if (closeLayerExists) {
         await page.click('input[name="closeLayer"]');
       }
+      await hookSlack(
+        `${CONFIG.COUNT}개 복권 구매 성공! - 확인하러가기: https://dhlottery.co.kr/myPage.do?method=notScratchListView`,
+      );
     } catch (popupError) {
       debug('확인 팝업이 나타나지 않았습니다. 구매는 진행되었을 수 있습니다.');
+      await hookSlack(`구매버튼 오류 발생`);
       // 팝업이 나타나지 않아도 구매는
       // 진행되었을 수 있으므로 계속 진행
     }
 
-    await hookSlack(
-      `${CONFIG.COUNT}개 복권 구매 성공! - 확인하러가기: https://dhlottery.co.kr/myPage.do?method=notScratchListView`,
-    );
     debug('구매 완료');
   } catch (error) {
     debug('구매 완료 단계에서 오류 발생:', error);
