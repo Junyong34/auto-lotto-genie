@@ -40,19 +40,14 @@ jobs:
 
       - name: Chrome 설치
         run: |
-          1) Chrome 바이너리 다운로드 및 설치
-           wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/124.0.6367.18/linux64/chrome-linux64.zip
-           unzip chrome-linux64.zip
-           sudo mv chrome-linux64/* /usr/local/bin/
-           
-           # 2) Chromedriver 다운로드 및 설치
-           wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/124.0.6367.18/linux64/chromedriver-linux64.zip
-           unzip chromedriver-linux64.zip
-           sudo mv chromedriver /usr/local/bin/
-           
-           # 3) 환경 변수로 경로 설정
-           echo "CHROME_PATH=/usr/local/bin/chrome" >> $GITHUB_ENV
-           echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
+          wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/124.0.6367.18/linux64/chrome-linux64.zip
+          unzip chrome-linux64.zip
+          sudo mv chrome-linux64/* /usr/local/bin/
+          wget https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/124.0.6367.18/linux64/chromedriver-linux64.zip
+          unzip chromedriver-linux64.zip
+          sudo mv chromedriver /usr/local/bin/
+          echo "CHROME_PATH=/usr/local/bin/chrome" >> $GITHUB_ENV
+          echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
 
       - name: 로또 구매 실행
         env:
