@@ -374,21 +374,25 @@ async function purchaseLottoStep(page: Page): Promise<void> {
 
     try {
       // 타임아웃 시간을 10초로 늘림
-      await page.waitForFunction(
-        () => {
-          const el = document.querySelector(
-            '#popupLayerConfirm',
-          ) as HTMLDivElement;
-          return el && el.style.display !== 'none';
-        },
-        { timeout: 10000 },
-      );
-      await page.evaluate(() => {
-        const element = document.querySelector(
-          `#popupLayerConfirm input[type="button"][value="확인"]`,
-        ) as any;
-        if (element) element.click();
+      await page.waitForSelector('#popupLayerConfirm', { timeout: 10000 });
+
+      // 그 다음 요소가 표시되는지 확인
+      const isVisible = await page.evaluate(() => {
+        const el = document.querySelector(
+          '#popupLayerConfirm',
+        ) as HTMLDivElement;
+        return el && el.style.display !== 'none';
       });
+
+      if (isVisible) {
+        // 확인 버튼 클릭
+        await page.evaluate(() => {
+          const element = document.querySelector(
+            `#popupLayerConfirm input[type="button"][value="확인"]`,
+          ) as any;
+          if (element) element.click();
+        });
+      }
       // 확인 버튼을 누른 후 필요한 경우 닫기 버튼 클릭
       const closeLayerExists = await page.$('input[name="closeLayer"]');
       if (closeLayerExists) {
