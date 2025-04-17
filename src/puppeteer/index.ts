@@ -294,15 +294,26 @@ async function navigateToLottoPageStep(page: Page): Promise<void> {
 }
 
 // 6. AI 추천 번호 선택 단계
-async function selectRecommendedNumbersStep(
-  page: Page,
-  recommendNumbers: number[][],
-): Promise<void> {
+async function selectRecommendedNumbersStep(page: Page): Promise<void> {
   debug('AI 추천 번호 선택 단계 시작');
-
   try {
-    debug('추천받은 로또 번호로 선택 시작', recommendNumbers);
+    // 로또 AI로부터 추천번호 받아오기 -
+    // 현재 연도의 주차 번호 계산
+    const currentWeek = dayjs().week();
 
+    // 주차 번호에 따라 AI 제공자 결정 (짝수 주: Gemini, 홀수 주: OpenAI)
+    const aiProvider = currentWeek % 2 === 0 ? 'google' : 'openai';
+    const aiProviderName = aiProvider === 'google' ? 'Gemini AI' : 'OpenAI';
+
+    await hookSlack(
+      `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! (이번 주 AI: ${aiProviderName}) 나머지는 나의 로또 번호`,
+    );
+    // 격주로 변경되는 provider 사용
+    console.log(`\n----- ${aiProviderName} 사용 -----`);
+    const aiResult = await getLottoRecommendation({ provider: aiProvider });
+    const recommendNumbers = aiResult.recommendations;
+
+    debug('추천받은 로또 번호로 선택 시작', recommendNumbers);
     // 수동 선택 모드로 전환
     await page.waitForSelector('#num1');
     await page.click('#num1');
@@ -474,23 +485,7 @@ async function executeSteps(
 
 // 메인 실행 함수
 async function buyLotto(): Promise<void> {
-  // 현재 연도의 주차 번호 계산
-  const currentWeek = dayjs().week();
-
-  // 주차 번호에 따라 AI 제공자 결정 (짝수 주: Gemini, 홀수 주: OpenAI)
-  const aiProvider = currentWeek % 2 === 0 ? 'google' : 'openai';
-  const aiProviderName = aiProvider === 'google' ? 'Gemini AI' : 'OpenAI';
-
-  await hookSlack(
-    `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! (이번 주 AI: ${aiProviderName}) 나머지는 나의 로또 번호`,
-  );
-
   try {
-    // 로또 AI로부터 추천번호 받아오기 - 격주로 변경되는 provider 사용
-    console.log(`\n----- ${aiProviderName} 사용 -----`);
-    const aiResult = await getLottoRecommendation({ provider: aiProvider });
-    const recommendNumbers = aiResult.recommendations;
-
     // 실행할 단계 정의
     const steps: IStep[] = [
       { name: '로그인', execute: async (page) => await loginStep(page) },
@@ -504,8 +499,7 @@ async function buyLotto(): Promise<void> {
       },
       {
         name: 'AI 추천 번호 선택',
-        execute: async (page) =>
-          await selectRecommendedNumbersStep(page, recommendNumbers),
+        execute: async (page) => await selectRecommendedNumbersStep(page),
       },
       {
         name: '나의 로또 번호 선택',
