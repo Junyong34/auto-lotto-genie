@@ -29,10 +29,10 @@ async function getGeminiLottoRecommendation(): Promise<number[][]> {
 
   try {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    // const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-pro-exp-03-25',
-    });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    // const model = genAI.getGenerativeModel({
+    //   model: 'gemini-2.5-pro-exp-03-25',
+    // });
 
     // 로또 당첨 번호 데이터 가져오기
     const lottoData = await getLottoWinningNumbers();
