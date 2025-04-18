@@ -30,6 +30,8 @@ const CONFIG = {
   USER_PW: process.env.LOTTO_USER_PW || '',
   COUNT: Number(process.env.LOTTO_COUNT || 5),
   SLACK_API_URL: process.env.SLACK_API_URL || '',
+  TELEGRAM_TOKEN: process.env.TELEGRAM_TOKEN || '',
+  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || '',
 };
 
 // 환경변수 검증
@@ -64,13 +66,165 @@ async function captureErrorScreenshot(
       fullPage: true,
     });
     debug(`[${stepName}] 오류 발생 스크린샷 저장: ${errorScreenshotPath}`);
-    await hookSlack(
+    await hookAlert(
       `[${stepName}] 오류 발생: ${
         error instanceof Error ? error.message : String(error)
       } - 스크린샷: ${errorScreenshotPath}`,
     );
   } catch (screenshotError) {
     debug(`[${stepName}] 오류 발생 스크린샷 저장 실패:`, screenshotError);
+  }
+}
+
+// 랜덤 로또 번호 생성 함수
+function generateRandomLottoNumbers(): number[][] {
+  const result: number[][] = [];
+
+  // 5세트의 로또 번호 생성
+  for (let i = 0; i < 5; i++) {
+    const numbers = new Set<number>();
+
+    // 각 세트는 6개의 번호로 구성
+    while (numbers.size < 6) {
+      // 1~45 사이의 랜덤 번호 생성
+      const randomNumber = Math.floor(Math.random() * 45) + 1;
+      numbers.add(randomNumber);
+    }
+
+    // 숫자를 오름차순으로 정렬
+    result.push(Array.from(numbers).sort((a, b) => a - b));
+  }
+
+  return result;
+}
+
+// 텔레그램 로또 번호 추천 메시지 생성
+function formatLottoRecommendation(lottoSets: number[][]): string {
+  let message = '🎲 추천 로또 번호:\n';
+
+  lottoSets.forEach((set, index) => {
+    message += `세트 ${index + 1}: [${set.join(', ')}]\n`;
+  });
+
+  return message;
+}
+
+// 텔레그램 메시지 콜백 처리
+async function handleTelegramCallback(
+  callback_query_id: string,
+  data: string,
+): Promise<void> {
+  if (!CONFIG.TELEGRAM_TOKEN) {
+    debug('텔레그램 토큰이 설정되지 않았습니다.');
+    return;
+  }
+
+  try {
+    // 콜백 쿼리 응답 (버튼 로딩 상태 제거)
+    await axios.post(
+      `https://api.telegram.org/bot${CONFIG.TELEGRAM_TOKEN}/answerCallbackQuery`,
+      {
+        callback_query_id,
+        text: '로또 번호를 생성하는 중...',
+      },
+    );
+
+    // 랜덤 로또 번호 생성
+    const randomLottoNumbers = generateRandomLottoNumbers();
+    const lottoMessage = formatLottoRecommendation(randomLottoNumbers);
+
+    // 결과 메시지 전송
+    await hookTelegram(lottoMessage);
+
+    debug('텔레그램 콜백 처리 성공');
+  } catch (error) {
+    console.error('텔레그램 콜백 처리 실패:', error);
+  }
+}
+
+// 텔레그램 메시지 업데이트 확인 함수
+async function startTelegramUpdates(): Promise<void> {
+  if (!CONFIG.TELEGRAM_TOKEN) {
+    debug('텔레그램 토큰이 설정되지 않았습니다.');
+    return;
+  }
+
+  // let offset = 0;
+
+  // const checkUpdates = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `https://api.telegram.org/bot${CONFIG.TELEGRAM_TOKEN}/getUpdates`,
+  //       {
+  //         params: { offset, timeout: 30 },
+  //       },
+  //     );
+
+  //     const updates = response.data.result;
+
+  //     if (updates && updates.length > 0) {
+  //       // 마지막 업데이트의 ID + 1을 다음 offset으로 설정
+  //       offset = updates[updates.length - 1].update_id + 1;
+
+  //       // 각 업데이트 처리
+  //       for (const update of updates) {
+  //         // 콜백 쿼리 처리 (버튼 클릭)
+  //         if (update.callback_query) {
+  //           const { id, data } = update.callback_query;
+  //           await handleTelegramCallback(id, data);
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('텔레그램 업데이트 확인 실패:', error);
+  //   }
+
+  //   // 재귀적으로 다음 업데이트 확인
+  //   setTimeout(checkUpdates, 1000);
+  // };
+
+  // // 업데이트 확인 시작
+  // checkUpdates();
+}
+
+// 텔레그램으로 메시지 전송 함수
+async function hookTelegram(message: string): Promise<void> {
+  if (!CONFIG.TELEGRAM_TOKEN) {
+    debug('텔레그램 토큰이 설정되지 않았습니다.');
+    return;
+  }
+
+  const koreaTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
+  const formattedMessage = `
+<b>🎯 로또 자동 구매 봇 알림</b>
+<i>${koreaTime}</i>
+───────────────
+${message}
+───────────────`;
+
+  try {
+    // 텔레그램 API 엔드포인트: sendMessage 메서드 사용
+    const url = `https://api.telegram.org/bot${CONFIG.TELEGRAM_TOKEN}/sendMessage`;
+
+    await axios.post(url, {
+      chat_id: CONFIG.TELEGRAM_CHAT_ID,
+      text: formattedMessage,
+      parse_mode: 'HTML',
+      // reply_markup: {
+      //   inline_keyboard: [
+      //     [
+      //       {
+      //         text: '🎲 로또 번호 추첨',
+      //         callback_data: 'generate_lotto',
+      //       },
+      //     ],
+      //   ],
+      // },
+    });
+
+    debug('텔레그램 메시지 전송 성공');
+  } catch (error) {
+    console.error('텔레그램 메시지 전송 실패:', error);
   }
 }
 
@@ -87,9 +241,24 @@ async function hookSlack(message: string): Promise<void> {
   };
 
   try {
-    await axios.post(CONFIG.SLACK_API_URL, payload);
+    // Slack으로 메시지 전송
+    if (CONFIG.SLACK_API_URL) {
+      // await axios.post(CONFIG.SLACK_API_URL, payload);
+    }
   } catch (error) {
-    console.error('Slack 메시지 전송 실패:', error);
+    console.error('슬랙 메시지 전송 실패:', error);
+  }
+}
+
+async function hookAlert(message: string): Promise<void> {
+  try {
+    // 슬랙으로 메시지 전송
+    // await hookSlack(message);
+
+    // 텔레그램으로 메시지 전송
+    await hookTelegram(message);
+  } catch (error) {
+    console.error('알람 전송 실패:', error);
   }
 }
 
@@ -256,8 +425,10 @@ async function checkBalanceStep(
     );
 
     const balance = parseInt(balanceText.replace(/[,원]/g, ''));
-    debug(`사용자: ${userName}, 예치금: ${balance}원`);
-    await hookSlack(`로그인 사용자: ${userName}, 예치금: ${balance}`);
+    debug(`사용자: ${userName.replace('*', '*')}, 예치금: ${balance}원`);
+    await hookAlert(
+      `로그인 사용자: ${userName.replace('*', '*')}, 예치금: ${balance}`,
+    );
 
     if (1000 * CONFIG.COUNT > balance) {
       throw new Error(
@@ -305,7 +476,7 @@ async function selectRecommendedNumbersStep(page: Page): Promise<void> {
     const aiProvider = currentWeek % 2 === 0 ? 'google' : 'openai';
     const aiProviderName = aiProvider === 'google' ? 'Gemini AI' : 'OpenAI';
 
-    await hookSlack(
+    await hookAlert(
       `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! (이번 주 AI: ${aiProviderName}) 나머지는 나의 로또 번호`,
     );
     // 격주로 변경되는 provider 사용
@@ -409,12 +580,12 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       if (closeLayerExists) {
         await page.click('input[name="closeLayer"]');
       }
-      await hookSlack(
+      await hookAlert(
         `${CONFIG.COUNT}개 복권 구매 성공! - 확인하러가기: https://dhlottery.co.kr/myPage.do?method=notScratchListView`,
       );
     } catch (popupError) {
       debug('확인 팝업이 나타나지 않았습니다. 구매는 진행되었을 수 있습니다.');
-      await hookSlack(`구매버튼 오류 발생`);
+      await hookAlert(`구매버튼 오류 발생`);
       // 팝업이 나타나지 않아도 구매는
       // 진행되었을 수 있으므로 계속 진행
     }
@@ -468,7 +639,7 @@ async function executeSteps(
   } catch (error) {
     console.error('상세 에러:', error);
     debug('에러 발생:', error);
-    await hookSlack(error instanceof Error ? error.message : String(error));
+    await hookAlert(error instanceof Error ? error.message : String(error));
     process.exit(1); // Git Action에서 실패로 인식되도록 종료 코드 1 반환
   } finally {
     if (debugMode) {
@@ -486,6 +657,9 @@ async function executeSteps(
 // 메인 실행 함수
 async function buyLotto(): Promise<void> {
   try {
+    // 텔레그램 업데이트 확인 시작
+    startTelegramUpdates();
+
     // 실행할 단계 정의
     const steps: IStep[] = [
       { name: '로그인', execute: async (page) => await loginStep(page) },
