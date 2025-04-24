@@ -56,7 +56,7 @@ jobs:
           sudo chmod +x /usr/local/bin/chromedriver
 
           # 4) 환경 변수 등록
-          echo "CHROME_PATH=/opt/chrome-124/chrome" >> $GITHUB_ENV
+          echo "CHROME_PATH=/opt/chrome-130/chrome" >> $GITHUB_ENV
           echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
 
       - name: 로또 구매 실행

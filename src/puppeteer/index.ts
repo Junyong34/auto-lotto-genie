@@ -586,6 +586,7 @@ async function purchaseLottoStep(page: Page): Promise<void> {
     } catch (popupError) {
       debug('확인 팝업이 나타나지 않았습니다. 구매는 진행되었을 수 있습니다.');
       await hookAlert(`구매버튼 오류 발생`);
+      throw popupError;
       // 팝업이 나타나지 않아도 구매는
       // 진행되었을 수 있으므로 계속 진행
     }
