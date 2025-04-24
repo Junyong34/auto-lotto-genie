@@ -556,9 +556,18 @@ async function purchaseLottoStep(page: Page): Promise<void> {
 
     try {
       // 타임아웃 시간을 10초로 늘림
-      await page.waitForSelector('#popupLayerConfirm', { timeout: 10000 });
+      await page.waitForSelector('#popupLayerConfirm', {
+        visible: true,
+        timeout: 10000,
+      });
+
       debug('popupLayerConfirm 창 확인');
       // 그 다음 요소가 표시되는지 확인
+      const isVisible2 = await page.evaluate(() => {
+        const el = document.querySelector('#popupLayerConfirm');
+        return el && window.getComputedStyle(el).display !== 'none';
+      });
+
       const isVisible = await page.evaluate(() => {
         const el = document.querySelector(
           '#popupLayerConfirm',
@@ -567,6 +576,7 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       });
 
       debug('isVisible 값:' + isVisible);
+      debug('isVisible 값:' + isVisible2);
       if (isVisible) {
         // 확인 버튼 클릭
         await page.evaluate(() => {
