@@ -253,10 +253,10 @@ async function hookSlack(message: string): Promise<void> {
 async function hookAlert(message: string): Promise<void> {
   try {
     // 슬랙으로 메시지 전송
-    // await hookSlack(message);
+    await hookSlack(message);
 
     // 텔레그램으로 메시지 전송
-    await hookTelegram(message);
+    // await hookTelegram(message);
   } catch (error) {
     console.error('알람 전송 실패:', error);
   }
@@ -473,7 +473,7 @@ async function selectRecommendedNumbersStep(page: Page): Promise<void> {
     const currentWeek = dayjs().week();
 
     // 주차 번호에 따라 AI 제공자 결정 (짝수 주: Gemini, 홀수 주: OpenAI)
-    const aiProvider = currentWeek % 2 === 0 ? 'google' : 'openai';
+    const aiProvider = 'google'; //currentWeek % 2 === 0 ? 'google' : 'openai';
     const aiProviderName = aiProvider === 'google' ? 'Gemini AI' : 'OpenAI';
 
     await hookAlert(
@@ -658,7 +658,7 @@ async function executeSteps(
 async function buyLotto(): Promise<void> {
   try {
     // 텔레그램 업데이트 확인 시작
-    startTelegramUpdates();
+    // startTelegramUpdates();
 
     // 실행할 단계 정의
     const steps: IStep[] = [
