@@ -570,10 +570,14 @@ async function purchaseLottoStep(page: Page): Promise<void> {
 
     try {
       // 타임아웃 시간을 10초로 늘림
-      await page.waitForSelector('#popupLayerConfirm', {
-        // visible: true,
-        timeout: 10000,
-      });
+      // display 스타일이 none이 아니게 될 때까지 최대 10초 대기
+      await page.waitForFunction(
+        () => {
+          const el = document.querySelector('#popupLayerConfirm');
+          return el && window.getComputedStyle(el).display !== 'none';
+        },
+        { timeout: 10000 },
+      );
 
       debug('popupLayerConfirm 창 확인');
       // 그 다음 요소가 표시되는지 확인
