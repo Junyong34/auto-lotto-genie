@@ -552,7 +552,7 @@ async function purchaseLottoStep(page: Page): Promise<void> {
   debug('구매 완료 단계 시작');
 
   try {
-    await page.click('#btnBuy input[value="구매하기"]');
+    await page.click('input[value="구매하기"]');
     const elementBtn = await page.$('#btnBuy');
     // await elementBtn.evaluate((el) => {
     //   if (el.offsetWidth > 0 && el.offsetHeight > 0) {
