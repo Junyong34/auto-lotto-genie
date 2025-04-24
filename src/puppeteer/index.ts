@@ -552,34 +552,23 @@ async function purchaseLottoStep(page: Page): Promise<void> {
   debug('구매 완료 단계 시작');
 
   try {
-    const iframeHandle = await page.waitForSelector('iframe#ifrm_tab', {
-      visible: true,
-      timeout: 5000,
+    const dombtn = document.querySelector('#btnBuy');
+    debug('btn' + dombtn);
+
+    await page.click('#btnBuy input[value="구매하기"]');
+    await page.evaluate(() => {
+      const element = document.getElementById(`#btnBuy`);
+      if (element) element.click();
     });
-    if (!iframeHandle) throw new Error('ifrm_tab iframe을 찾을 수 없습니다.');
 
-    // 2. Puppeteer Frame 객체 얻기
-    const frame = await iframeHandle.contentFrame();
-    if (!frame) throw new Error('iframe.contentFrame()을 얻지 못했습니다.');
-
-    // 3. iframe 내부에서 구매 버튼 기다렸다가 클릭
-    await frame.waitForSelector('#btnBuy', { visible: true, timeout: 5000 });
-    await frame.click('#btnBuy');
-
-    // 4. 팝업이 iframe 안에 뜨는지, 아니면 메인 페이지에서 뜨는지에 따라 선택
-    // (a) iframe 안에서 뜬다면:
-    await frame.waitForSelector('#popupLayerConfirm', {
-      visible: true,
-      timeout: 10000,
-    });
-    debug('popupLayerConfirm 창 확인');
     try {
       // 타임아웃 시간을 10초로 늘림
-      // await page.waitForSelector('#popupLayerConfirm', {
-      //   visible: true,
-      //   timeout: 10000,
-      // });
+      await page.waitForSelector('#popupLayerConfirm', {
+        visible: true,
+        timeout: 10000,
+      });
 
+      debug('popupLayerConfirm 창 확인');
       // 그 다음 요소가 표시되는지 확인
       const isVisible2 = await page.evaluate(() => {
         const el = document.querySelector('#popupLayerConfirm');
