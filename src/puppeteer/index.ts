@@ -590,8 +590,50 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       });
 
       debug('isVisible 값:' + isVisible);
-      debug('isVisible 값:' + isVisible2);
-      if (isVisible) {
+      debug('isVisible2 값:' + isVisible2);
+
+      // 모든 방법으로 확인하여 가시성 문제 해결
+      const visibilityDetails = await page.evaluate(() => {
+        const el = document.querySelector('#popupLayerConfirm');
+        if (!el) return null;
+
+        // 다양한 방법으로 요소의 가시성 확인
+        const hasStyle =
+          el instanceof HTMLElement && el.style && el.style.display !== 'none';
+        const computedStyle = window.getComputedStyle(el).display !== 'none';
+        const isRectVisible = el.getBoundingClientRect().height > 0;
+        const hasChildren = el.children.length > 0;
+
+        // 결과 객체 반환
+        return {
+          hasStyle,
+          computedStyle,
+          isRectVisible,
+          hasChildren,
+        };
+      });
+
+      const isReallyVisible =
+        visibilityDetails &&
+        (visibilityDetails.hasStyle ||
+          visibilityDetails.computedStyle ||
+          visibilityDetails.isRectVisible ||
+          visibilityDetails.hasChildren);
+
+      if (visibilityDetails) {
+        debug(
+          '확인창 가시성 상세: ' +
+            `hasStyle=${visibilityDetails.hasStyle}, ` +
+            `computedStyle=${visibilityDetails.computedStyle}, ` +
+            `isRectVisible=${visibilityDetails.isRectVisible}, ` +
+            `hasChildren=${visibilityDetails.hasChildren}`,
+        );
+      }
+
+      debug('isReallyVisible 값:' + isReallyVisible);
+
+      // 어떤 가시성 체크든 통과하면 확인 버튼 클릭
+      if (isVisible || isVisible2 || isReallyVisible) {
         // 확인 버튼 클릭
         await page.evaluate(() => {
           const element = document.querySelector(
