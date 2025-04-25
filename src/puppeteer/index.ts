@@ -328,7 +328,7 @@ async function loginStep(page: Page): Promise<void> {
   try {
     debug('로그인 페이지로 이동');
     await page.goto('https://dhlottery.co.kr/user.do?method=login', {
-      waitUntil: 'networkidle0',
+      waitUntil: 'networkidle2',
       timeout: 10000,
     });
 
@@ -450,7 +450,10 @@ async function navigateToLottoPageStep(page: Page): Promise<void> {
 
   try {
     // 로또 구매 페이지
-    await page.goto('https://ol.dhlottery.co.kr/olotto/game/game645.do');
+    await page.goto('https://ol.dhlottery.co.kr/olotto/game/game645.do', {
+      waitUntil: 'networkidle2',
+      timeout: 10000,
+    });
 
     // 경고창 처리
     const alertButton = await page.$('#popupLayerAlert button');
@@ -650,6 +653,32 @@ async function buyTest(page: Page): Promise<void> {
     }
 
     debug('모든 추천 번호 선택 완료');
+
+    // 구매하기 버튼 클릭
+    await page.waitForSelector('#btnBuy');
+    await page.click('#btnBuy');
+
+    // 팝업이 나타날 때까지 대기
+    await page.waitForFunction(
+      () => {
+        const popup = document.querySelector(
+          '#popupLayerConfirm',
+        ) as HTMLDivElement;
+        return popup && popup?.style?.display === 'block';
+      },
+      { timeout: 5000 }, // 5초 타임아웃
+    );
+
+    console.log('팝업이 나타났습니다.');
+
+    // 확인 버튼 클릭
+    await page.waitForSelector('.layer-alert input[value="확인"]');
+    await page.click('.layer-alert input[value="확인"]');
+
+    console.log('확인 버튼을 클릭했습니다.');
+
+    // 작업 완료 후 잠시 대기 (필요에 따라 조정)
+    await page.waitForTimeout(3000);
   } catch (error) {
     debug('추천 번호 선택 단계에서 오류 발생:', error);
     await captureErrorScreenshot(page, '추천번호선택', error);
@@ -733,12 +762,11 @@ async function buyLotto(): Promise<void> {
       {
         name: '구메 테스트',
         execute: async (page) => await buyTest(page),
-        skip: true,
       },
       {
         name: 'AI 추천 번호 선택',
         execute: async (page) => await selectRecommendedNumbersStep(page),
-        // skip: true,
+        skip: true,
       },
       {
         name: '나의 로또 번호 선택',
@@ -748,6 +776,7 @@ async function buyLotto(): Promise<void> {
       {
         name: '구매 완료',
         execute: async (page) => await purchaseLottoStep(page),
+        skip: true,
       },
     ];
 
