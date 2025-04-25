@@ -570,14 +570,10 @@ async function purchaseLottoStep(page: Page): Promise<void> {
 
     try {
       // 타임아웃 시간을 10초로 늘림
-      // display 스타일이 none이 아니게 될 때까지 최대 10초 대기
-      await page.waitForFunction(
-        () => {
-          const el = document.querySelector('#popupLayerConfirm');
-          return el && window.getComputedStyle(el).display !== 'none';
-        },
-        { timeout: 10000 },
-      );
+      await page.waitForSelector('#popupLayerConfirm', {
+        // visible: true,
+        timeout: 10000,
+      });
 
       debug('popupLayerConfirm 창 확인');
       // 그 다음 요소가 표시되는지 확인
@@ -601,7 +597,7 @@ async function purchaseLottoStep(page: Page): Promise<void> {
           const element = document.querySelector(
             `#popupLayerConfirm input[type="button"][value="확인"]`,
           ) as any;
-          if (element) element.click();
+          // if (element) element.click();
         });
       }
       // 확인 버튼을 누른 후 필요한 경우 닫기 버튼 클릭
@@ -624,6 +620,49 @@ async function purchaseLottoStep(page: Page): Promise<void> {
   } catch (error) {
     debug('구매 완료 단계에서 오류 발생:', error);
     await captureErrorScreenshot(page, '구매완료', error);
+    throw error;
+  }
+}
+
+// 10. 구매 테스트
+async function buyTest(page: Page): Promise<void> {
+  try {
+    debug('추천받은 로또 번호로 선택 시작');
+    // 수동 선택 모드로 전환
+    await page.waitForSelector('#num1');
+    await page.click('#num1');
+
+    // 123456  배열 만들기
+    const recommendNumbers = [[1, 2, 3, 4, 5, 6]];
+
+    // 추천받은 번호 배열 순회 (최대 5개 세트)
+    for (let i = 0; i < recommendNumbers.length && i < 5; i++) {
+      debug(
+        `${i + 1}번째 추천번호 세트 선택 중: ${recommendNumbers[i].join(', ')}`,
+      );
+
+      // 현재 세트의 6개 번호 순회하며 선택
+      for (const number of recommendNumbers[i]) {
+        debug(number);
+        // 번호에 해당하는 DOM 요소 선택하여 클릭
+        await page.waitForSelector(`#check645num${number}`);
+        await page.evaluate((num) => {
+          const element = document.getElementById(`check645num${num}`);
+          if (element) element.click();
+        }, number);
+        debug(`번호 ${number} 선택됨`);
+      }
+
+      // 선택 완료 후 확인 버튼 클릭
+      await page.waitForSelector('#btnSelectNum');
+      await page.click('#btnSelectNum');
+      debug(`${i + 1}번째 세트 선택 완료`);
+    }
+
+    debug('모든 추천 번호 선택 완료');
+  } catch (error) {
+    debug('추천 번호 선택 단계에서 오류 발생:', error);
+    await captureErrorScreenshot(page, '추천번호선택', error);
     throw error;
   }
 }
@@ -702,8 +741,13 @@ async function buyLotto(): Promise<void> {
         execute: async (page) => await navigateToLottoPageStep(page),
       },
       {
+        name: '구메 테스트',
+        execute: async (page) => await buyTest(page),
+      },
+      {
         name: 'AI 추천 번호 선택',
         execute: async (page) => await selectRecommendedNumbersStep(page),
+        skip: true,
       },
       {
         name: '나의 로또 번호 선택',
