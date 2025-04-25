@@ -423,7 +423,7 @@ async function selectRecommendedNumbersStep(page: Page): Promise<void> {
     const recommendNumbers = [[1, 2, 3, 4, 5, 6]];
     debug('추천받은 로또 번호로 선택 시작', recommendNumbers);
     // 수동 선택 모드로 전환
-    await page.locator('#num1').waitFor({ state: 'visible', timeout: 10000 });
+    // await page.locator('#num1').waitFor({ state: 'visible', timeout: 10000 });
     await page.locator('#num1').click();
 
     // 추천받은 번호 배열 순회 (최대 5개 세트)
