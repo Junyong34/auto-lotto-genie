@@ -142,4 +142,4 @@ async function main() {
 }
 
 // 프로그램 실행
-main();
+// main();
