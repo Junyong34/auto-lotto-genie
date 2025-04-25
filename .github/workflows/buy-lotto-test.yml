@@ -5,8 +5,8 @@ on:
   #   # 매주 수요일 오전 11시에 실행 (UTC+9, 한국 시간)
   #   # cron은 UTC 시간을 기준으로 하므로 한국 시간 오전 11시는 UTC 02:00
   #   - cron: '0 2 * * 3'
-  push:
-    branches: [main, master]
+  # push:
+  # branches: [main, master]
   workflow_dispatch: # 수동 실행 가능하도록 설정
 
 jobs:

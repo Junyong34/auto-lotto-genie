@@ -577,15 +577,15 @@ async function purchaseLottoStep(page: Page): Promise<void> {
 
       debug('isVisible 값:' + isVisible);
       debug('isVisible2 값:' + isVisible2);
-      if (isVisible) {
-        // 확인 버튼 클릭
-        await page.evaluate(() => {
-          const element = document.querySelector(
-            `#popupLayerConfirm input[type="button"][value="확인"]`,
-          ) as any;
-          // if (element) element.click();
-        });
-      }
+      // if (isVisible) {
+      // 확인 버튼 클릭
+      await page.evaluate(() => {
+        const element = document.querySelector(
+          `#popupLayerConfirm input[type="button"][value="확인"]`,
+        ) as any;
+        if (element) element.click();
+      });
+      // }
       // 확인 버튼을 누른 후 필요한 경우 닫기 버튼 클릭
       const closeLayerExists = await page.$('input[name="closeLayer"]');
       if (closeLayerExists) {
@@ -729,11 +729,12 @@ async function buyLotto(): Promise<void> {
       {
         name: '구메 테스트',
         execute: async (page) => await buyTest(page),
+        skip: true,
       },
       {
         name: 'AI 추천 번호 선택',
         execute: async (page) => await selectRecommendedNumbersStep(page),
-        skip: true,
+        // skip: true,
       },
       {
         name: '나의 로또 번호 선택',
