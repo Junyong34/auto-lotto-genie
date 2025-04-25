@@ -683,6 +683,7 @@ async function buyLotto(): Promise<void> {
       {
         name: '나의 로또 번호 선택',
         execute: async (page) => await selectMyLottoNumbersStep(page),
+        skip: true,
       },
       {
         name: '구매 완료',
