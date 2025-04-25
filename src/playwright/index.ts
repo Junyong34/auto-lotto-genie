@@ -404,23 +404,23 @@ async function navigateToLottoPageStep(page: Page): Promise<void> {
 async function selectRecommendedNumbersStep(page: Page): Promise<void> {
   debug('AI 추천 번호 선택 단계 시작');
   try {
-    // // 로또 AI로부터 추천번호 받아오기 -
-    // // 현재 연도의 주차 번호 계산
-    // const currentWeek = dayjs().week();
+    // 로또 AI로부터 추천번호 받아오기 -
+    // 현재 연도의 주차 번호 계산
+    const currentWeek = dayjs().week();
 
-    // // 주차 번호에 따라 AI 제공자 결정 (짝수 주: Gemini, 홀수 주: OpenAI)
-    // const aiProvider = 'google'; //currentWeek % 2 === 0 ? 'google' : 'openai';
-    // const aiProviderName = aiProvider === 'google' ? 'Gemini AI' : 'OpenAI';
+    // 주차 번호에 따라 AI 제공자 결정 (짝수 주: Gemini, 홀수 주: OpenAI)
+    const aiProvider = 'google'; //currentWeek % 2 === 0 ? 'google' : 'openai';
+    const aiProviderName = aiProvider === 'google' ? 'Gemini AI' : 'OpenAI';
 
-    // await hookAlert(
-    //   `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! (이번 주 AI: ${aiProviderName}) 나머지는 나의 로또 번호`,
-    // );
-    // // 격주로 변경되는 provider 사용
-    // console.log(`\n----- ${aiProviderName} 사용 -----`);
-    // const aiResult = await getLottoRecommendation({ provider: aiProvider });
-    // const recommendNumbers = aiResult.recommendations;
+    await hookAlert(
+      `${CONFIG.COUNT}개 자동 복권 구매 시작합니다! (이번 주 AI: ${aiProviderName}) 나머지는 나의 로또 번호`,
+    );
+    // 격주로 변경되는 provider 사용
+    console.log(`\n----- ${aiProviderName} 사용 -----`);
+    const aiResult = await getLottoRecommendation({ provider: aiProvider });
+    const recommendNumbers = aiResult.recommendations;
 
-    const recommendNumbers = [[1, 2, 3, 4, 5, 6]];
+    // const recommendNumbers = [[1, 2, 3, 4, 5, 6]];
     debug('추천받은 로또 번호로 선택 시작', recommendNumbers);
     // 수동 선택 모드로 전환
     // await page.locator('#num1').waitFor({ state: 'visible', timeout: 10000 });
