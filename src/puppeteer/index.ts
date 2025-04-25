@@ -677,7 +677,7 @@ async function buyTest(page: Page): Promise<void> {
 
     await page.waitForSelector('#popupLayerConfirm', {
       visible: true,
-      timeout: 10000,
+      timeout: 30000,
     });
     console.log(5555);
     // 팝업이 나타날 때까지 대기
