@@ -581,7 +581,7 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       // 확인 버튼 클릭
       await page.evaluate(() => {
         const element = document.querySelector(
-          `#popupLayerConfirm input[type="button"][value="확인"]`,
+          `input[type="button"][value="확인"]`,
         ) as any;
         if (element) element.click();
       });
