@@ -63,7 +63,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         uses: nick-fields/retry@v2
         with:
-          # timeout_minutes: 10
-          # max_attempts: 2
-          # retry_on: error
+          timeout_minutes: 10
+          max_attempts: 2
+          retry_on: error
           command: pnpm lotto:pw:headless-debug
