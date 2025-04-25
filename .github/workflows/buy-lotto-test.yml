@@ -44,11 +44,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Playwright 환경 확인
-        run: |
-          npx playwright install-deps chromium
-          ls -la /home/runner/.cache/ms-playwright/
-          echo "확인된 Playwright 브라우저 디렉토리:"
-          find /home/runner/.cache/ms-playwright -type d -name "*chromium*" | grep -v ".*/.cache"
+        run: npx playwright install-deps chromium && ls -la /home/runner/.cache/ms-playwright/
 
       - name: 로또 구매 실행
         env:
@@ -64,10 +60,9 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           PLAYWRIGHT_BROWSERS_PATH: /home/runner/.cache/ms-playwright
-          DEBUG: pw:api
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 15
-          max_attempts: 3
+          timeout_minutes: 10
+          max_attempts: 2
           retry_on: error
           command: pnpm lotto:pw:headless-debug
