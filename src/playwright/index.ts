@@ -274,10 +274,7 @@ async function loginStep(page: Page): Promise<void> {
 
   try {
     debug('로그인 페이지로 이동');
-    await page.goto('https://dhlottery.co.kr/user.do?method=login', {
-      waitUntil: 'networkidle',
-      timeout: 10000,
-    });
+    await page.goto('https://dhlottery.co.kr/user.do?method=login');
 
     // 디버그 모드 처리
     if (debugMode) {
@@ -320,7 +317,7 @@ async function loginStep(page: Page): Promise<void> {
     debug('비밀번호 입력 완료, 로그인 버튼 클릭');
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle' }),
+      //   page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.locator('form[name="jform"] .btn_common.lrg.blu').click(),
     ]);
     debug('로그인 완료');
@@ -341,7 +338,6 @@ async function checkBalanceStep(
     debug('메인 페이지로 이동하여 예치금 확인');
     await page.goto(
       'https://dhlottery.co.kr/common.do?method=main&mainMode=default',
-      { waitUntil: 'networkidle' },
     );
 
     // 사용자 이름 추출
@@ -382,10 +378,7 @@ async function navigateToLottoPageStep(page: Page): Promise<void> {
 
   try {
     // 로또 구매 페이지
-    await page.goto('https://ol.dhlottery.co.kr/olotto/game/game645.do', {
-      waitUntil: 'networkidle',
-      timeout: 10000,
-    });
+    await page.goto('https://ol.dhlottery.co.kr/olotto/game/game645.do');
 
     // 경고창 처리
     const alertButton = page.locator('#popupLayerAlert button');
