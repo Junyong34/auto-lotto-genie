@@ -520,22 +520,31 @@ async function purchaseLottoStep(page: Page): Promise<void> {
 
     try {
       // 팝업 확인 대기
-      await page
-        .locator('#popupLayerConfirm')
-        .waitFor({ state: 'visible', timeout: 10000 });
-      debug('popupLayerConfirm 창 확인');
+      //   await page
+      //     .locator('#popupLayerConfirm')
+      //     .waitFor({ state: 'visible', timeout: 10000 });
+      //   debug('popupLayerConfirm 창 확인');
 
       // 확인 버튼 클릭
-      const confirmButton = page.locator('.confirm');
-      if (await confirmButton.isVisible()) {
-        await confirmButton.click();
-      }
+      await page.evaluate(() => {
+        const element = document.querySelector(`.confirm`) as any;
+        if (element) {
+          element.click();
+        } else {
+          console.error(`요소 confirm 찾을 수 없습니다.`);
+        }
+      });
+
+      //   const confirmButton = page.locator('.confirm');
+      //   if (await confirmButton.isVisible()) {
+      //     await confirmButton.click();
+      //   }
 
       // 닫기 버튼 확인
-      const closeLayer = page.locator('input[name="closeLayer"]');
-      if (await closeLayer.isVisible()) {
-        await closeLayer.click();
-      }
+      //   const closeLayer = page.locator('input[name="closeLayer"]');
+      //   if (await closeLayer.isVisible()) {
+      //     await closeLayer.click();
+      //   }
 
       await hookAlert(
         `${CONFIG.COUNT}개 복권 구매 성공! - 확인하러가기: https://dhlottery.co.kr/myPage.do?method=notScratchListView`,
