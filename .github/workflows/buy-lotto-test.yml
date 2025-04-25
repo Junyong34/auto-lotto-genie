@@ -40,26 +40,13 @@ jobs:
       - name: 의존성 설치
         run: pnpm install
 
-        # https://github.com/GoogleChromeLabs/chrome-for-testing/blob/main/data/latest-versions-per-milestone-with-downloads.json
-      - name: Chrome 설치
+      - name: Playwright 브라우저 설치
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Playwright 환경 설정
         run: |
-          # 1) Chrome for Testing 135 다운로드 & 압축 해제
-          wget https://storage.googleapis.com/chrome-for-testing-public/135.0.7049.114/linux64/chrome-linux64.zip
-          unzip chrome-linux64.zip
-
-          # 2) 전체 폴더를 /opt/chrome-135 로 이동 (리소스 포함)
-          sudo mv chrome-linux64 /opt/chrome-135
-          sudo chmod -R a+rX /opt/chrome-135
-
-          # 3) Chromedriver 다운로드 & 설치
-          wget https://storage.googleapis.com/chrome-for-testing-public/135.0.7049.114/linux64/chromedriver-linux64.zip
-          unzip chromedriver-linux64.zip
-          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
-          sudo chmod +x /usr/local/bin/chromedriver
-
-          # 4) 환경 변수 등록
-          echo "CHROME_PATH=/opt/chrome-135/chrome" >> $GITHUB_ENV
-          echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
+          echo "CI=true" >> $GITHUB_ENV
+          echo "PLAYWRIGHT_BROWSERS_PATH=/ms-playwright" >> $GITHUB_ENV
 
       - name: 로또 구매 실행
         env:
@@ -74,11 +61,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          PUPPETEER_TIMEOUT: 30000
-          PUPPETEER_EXECUTABLE_PATH: ${{ env.CHROME_PATH }}
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
-          max_attempts: 2
-          retry_on: error
-          command: pnpm lotto:headless
+          # timeout_minutes: 10
+          # max_attempts: 2
+          # retry_on: error
+          command: pnpm lotto:pw:headless-debug
