@@ -655,25 +655,47 @@ async function buyTest(page: Page): Promise<void> {
     debug('모든 추천 번호 선택 완료');
 
     // 구매하기 버튼 클릭
+    console.log(11111);
+    await page.evaluate(() => {
+      console.log(2222);
+      console.log(
+        '버튼 클릭 전 팝업 상태:',
+        (document.querySelector('#popupLayerConfirm') as any)?.style?.display,
+      );
+    });
+    console.log(3333);
     await page.waitForSelector('#btnBuy');
     await page.click('#btnBuy');
+    console.log(4444);
+    // 클릭 후 팝업 상태 확인
+    await page.evaluate(() => {
+      console.log(
+        '버튼 클릭 후 팝업 상태:',
+        (document.querySelector('#popupLayerConfirm') as any)?.style?.display,
+      );
+    });
 
+    await page.waitForSelector('#popupLayerConfirm', {
+      visible: true,
+      timeout: 10000,
+    });
+    console.log(5555);
     // 팝업이 나타날 때까지 대기
-    await page.waitForFunction(
-      () => {
-        const popup = document.querySelector(
-          '#popupLayerConfirm',
-        ) as HTMLDivElement;
-        return popup && popup?.style?.display === 'block';
-      },
-      { timeout: 5000 }, // 5초 타임아웃
-    );
+    // await page.waitForFunction(
+    //   () => {
+    //     const popup = document.querySelector(
+    //       '#popupLayerConfirm',
+    //     ) as HTMLDivElement;
+    //     return popup && popup?.style?.display === 'block';
+    //   },
+    //   { timeout: 5000 }, // 5초 타임아웃
+    // );
 
     console.log('팝업이 나타났습니다.');
 
     // 확인 버튼 클릭
-    await page.waitForSelector('.layer-alert input[value="확인"]');
-    await page.click('.layer-alert input[value="확인"]');
+    // await page.waitForSelector('.layer-alert input[value="확인"]');
+    // await page.click('.layer-alert input[value="확인"]');
 
     console.log('확인 버튼을 클릭했습니다.');
 
