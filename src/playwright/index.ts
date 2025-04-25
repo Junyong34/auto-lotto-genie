@@ -425,7 +425,7 @@ async function selectRecommendedNumbersStep(page: Page): Promise<void> {
     // 수동 선택 모드로 전환
     // await page.locator('#num1').waitFor({ state: 'visible', timeout: 10000 });
     await page.evaluate(() => {
-      const element = document.getElementById(`#num1`);
+      const element = document.getElementById(`num1`);
       if (element) {
         element.click();
       } else {
@@ -457,7 +457,7 @@ async function selectRecommendedNumbersStep(page: Page): Promise<void> {
 
       // 선택 완료 후 확인 버튼 클릭
       await page.evaluate(() => {
-        const element = document.getElementById(`#btnSelectNum`);
+        const element = document.getElementById(`btnSelectNum`);
         if (element) {
           element.click();
         } else {
@@ -510,7 +510,7 @@ async function purchaseLottoStep(page: Page): Promise<void> {
   try {
     // await page.locator('#btnBuy').click();
     await page.evaluate(() => {
-      const element = document.getElementById(`#btnBuy`);
+      const element = document.getElementById(`btnBuy`);
       if (element) {
         element.click();
       } else {
