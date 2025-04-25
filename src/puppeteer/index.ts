@@ -49,76 +49,63 @@ function debug(...args: any[]): void {
   // }
 }
 
-// 스크린샷 캡처 유틸리티 함수
-async function captureScreenshot(
-  page: Page | null,
-  name: string,
-  options: {
-    saveToFile?: boolean;
-    filePrefix?: string;
-    fullPage?: boolean;
-  } = {},
-): Promise<string | null> {
-  if (!page) return null;
-
-  const { saveToFile = false, filePrefix = 'debug', fullPage = true } = options;
-
-  try {
-    let screenshotPath: string | undefined;
-
-    // 파일 저장이 필요한 경우 경로 생성
-    if (saveToFile) {
-      const dir = filePrefix.includes('error') ? 'errors' : 'debug';
-      screenshotPath = `./src/screens-images/${dir}/${filePrefix}-${name}-${dayjs().format(
-        'YYYYMMDD-HHmmss',
-      )}.png`;
-    }
-
-    // 스크린샷 캡처
-    const screenshot = await page.screenshot({
-      path: screenshotPath,
-      fullPage,
-      encoding: 'base64',
-    });
-
-    // base64 형식으로 로그에 출력
-    const base64Data = `data:image/png;base64,${screenshot}`;
-    debug(`[${name}] 스크린샷 base64 데이터 생성됨`);
-
-    // 파일로 저장된 경우 로그 출력
-    if (saveToFile && screenshotPath) {
-      debug(`[${name}] 스크린샷 저장: ${screenshotPath}`);
-    }
-
-    return base64Data;
-  } catch (error) {
-    debug(`[${name}] 스크린샷 캡처 실패:`, error);
-    return null;
-  }
-}
-
 // 오류 발생 시 스크린샷 저장 함수
 async function captureErrorScreenshot(
   page: Page | null,
   stepName: string,
   error: Error | unknown,
+  saveToFile: boolean = false,
 ): Promise<void> {
   if (!page) return;
 
   try {
-    // 에러 스크린샷 캡처 (파일 저장 + base64 로깅)
-    await captureScreenshot(page, stepName, {
-      saveToFile: true,
-      filePrefix: 'error',
+    // 스크린샷을 base64로 캡처
+    const base64Screenshot = await page.screenshot({
+      encoding: 'base64',
+      fullPage: true,
     });
 
+    // 콘솔에 base64 스크린샷 표시
+    debug(`[${stepName}] 오류 발생 스크린샷 (base64):`);
+    debug(`data:image/png;base64,${base64Screenshot}`);
+
+    // 파일 저장 옵션이 활성화된 경우 파일로도 저장
+    if (saveToFile) {
+      const errorScreenshotPath = `./src/screens-images/errors/${stepName}-error-${dayjs().format(
+        'YYYYMMDD-HHmmss',
+      )}.png`;
+
+      await page.screenshot({
+        path: errorScreenshotPath,
+        fullPage: true,
+      });
+
+      debug(
+        `[${stepName}] 오류 발생 스크린샷 파일 저장: ${errorScreenshotPath}`,
+      );
+
+      // 파일 저장 시에는 파일 경로를 포함한 알림 발송
+      await hookAlert(
+        `[${stepName}] 오류 발생: ${
+          error instanceof Error ? error.message : String(error)
+        } - 스크린샷: ${errorScreenshotPath}`,
+      );
+    } else {
+      // 파일 저장 없이 메시지만 전송
+      await hookAlert(
+        `[${stepName}] 오류 발생: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  } catch (screenshotError) {
+    debug(`[${stepName}] 오류 발생 스크린샷 캡처 실패:`, screenshotError);
+    // 스크린샷 실패해도, 에러 메시지는 보내기
     await hookAlert(
       `[${stepName}] 오류 발생: ${
         error instanceof Error ? error.message : String(error)
-      }`,
+      } (스크린샷 캡처 실패)`,
     );
-  } catch (screenshotError) {
-    debug(`[${stepName}] 오류 발생 스크린샷 저장 실패:`, screenshotError);
   }
 }
 
@@ -384,11 +371,14 @@ async function loginStep(page: Page): Promise<void> {
         // debugger;
       });
 
-      // 로그인 페이지 스크린샷 캡처
-      await captureScreenshot(page, '로그인_페이지', {
-        saveToFile: true,
-        filePrefix: 'login-debug',
+      const screenshotPath = `./src/screens-images/debug/login-debug-${dayjs().format(
+        'YYYYMMDD-HHmmss',
+      )}.png`;
+      await page.screenshot({
+        path: screenshotPath,
+        fullPage: true,
       });
+      debug(`스크린샷 저장: ${screenshotPath}`);
     }
 
     debug('페이지 로딩 상태 확인');
@@ -438,7 +428,7 @@ async function loginStep(page: Page): Promise<void> {
     debug('로그인 완료');
   } catch (error) {
     debug('로그인 단계에서 오류 발생:', error);
-    await captureErrorScreenshot(page, '로그인', error);
+    await captureErrorScreenshot(page, '로그인', error, false);
     throw error;
   }
 }
@@ -482,7 +472,7 @@ async function checkBalanceStep(
     return { userName, balance };
   } catch (error) {
     debug('예치금 확인 단계에서 오류 발생:', error);
-    await captureErrorScreenshot(page, '예치금확인', error);
+    await captureErrorScreenshot(page, '예치금확인', error, false);
     throw error;
   }
 }
@@ -502,7 +492,7 @@ async function navigateToLottoPageStep(page: Page): Promise<void> {
     }
   } catch (error) {
     debug('로또 구매 페이지 이동 단계에서 오류 발생:', error);
-    await captureErrorScreenshot(page, '페이지이동', error);
+    await captureErrorScreenshot(page, '페이지이동', error, false);
     throw error;
   }
 }
@@ -559,7 +549,7 @@ async function selectRecommendedNumbersStep(page: Page): Promise<void> {
     debug('모든 추천 번호 선택 완료');
   } catch (error) {
     debug('추천 번호 선택 단계에서 오류 발생:', error);
-    await captureErrorScreenshot(page, '추천번호선택', error);
+    await captureErrorScreenshot(page, '추천번호선택', error, false);
     throw error;
   }
 }
@@ -585,7 +575,7 @@ async function selectMyLottoNumbersStep(page: Page): Promise<void> {
     debug('나의 로또 번호 선택 완료');
   } catch (error) {
     debug('나의 로또 번호 선택 단계에서 오류 발생:', error);
-    await captureErrorScreenshot(page, '나의로또번호선택', error);
+    await captureErrorScreenshot(page, '나의로또번호선택', error, false);
     throw error;
   }
 }
@@ -619,13 +609,6 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       });
 
       debug('popupLayerConfirm 창 확인');
-
-      // 구매 과정 스크린샷 캡처
-      await captureScreenshot(page, '구매완료_팝업', {
-        saveToFile: true,
-        filePrefix: 'purchase-confirm',
-      });
-
       // 그 다음 요소가 표시되는지 확인
       const isVisible2 = await page.evaluate(() => {
         const el = document.querySelector('#popupLayerConfirm');
@@ -669,7 +652,7 @@ async function purchaseLottoStep(page: Page): Promise<void> {
     debug('구매 완료');
   } catch (error) {
     debug('구매 완료 단계에서 오류 발생:', error);
-    await captureErrorScreenshot(page, '구매완료', error);
+    await captureErrorScreenshot(page, '구매완료', error, false);
     throw error;
   }
 }
@@ -718,15 +701,9 @@ async function buyTest(page: Page): Promise<void> {
     });
 
     debug('popupLayerConfirm 창 확인');
-
-    // 구매 테스트 과정 스크린샷 캡처
-    await captureScreenshot(page, '구매테스트_팝업', {
-      saveToFile: true,
-      filePrefix: 'purchase-test',
-    });
   } catch (error) {
     debug('추천 번호 선택 단계에서 오류 발생:', error);
-    await captureErrorScreenshot(page, '추천번호선택', error);
+    await captureErrorScreenshot(page, '추천번호선택', error, false);
     throw error;
   }
 }
@@ -758,18 +735,11 @@ async function executeSteps(
       debug(`${i + 1}/${steps.length} 단계 실행: ${step.name}`);
 
       try {
-        // 단계 실행 전 스크린샷 캡처
-        await captureScreenshot(page, `${step.name}-시작`);
-
         const result = await step.execute(page, stepData);
         // 단계 실행 결과 데이터 업데이트
         if (result) {
           stepData = { ...stepData, ...result };
         }
-
-        // 단계 실행 후 스크린샷 캡처
-        await captureScreenshot(page, `${step.name}-완료`);
-
         debug(`${step.name} 단계 완료`);
       } catch (error) {
         debug(`${step.name} 단계 실패:`, error);
@@ -779,7 +749,10 @@ async function executeSteps(
   } catch (error) {
     console.error('상세 에러:', error);
     debug('에러 발생:', error);
+
+    // 단순히 에러 메시지만 전송
     await hookAlert(error instanceof Error ? error.message : String(error));
+
     process.exit(1); // Git Action에서 실패로 인식되도록 종료 코드 1 반환
   } finally {
     if (debugMode) {
