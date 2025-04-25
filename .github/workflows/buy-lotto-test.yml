@@ -41,7 +41,7 @@ jobs:
         run: pnpm install
 
       - name: Playwright 브라우저 설치
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install
 
       - name: Playwright 환경 설정
         run: |
