@@ -508,7 +508,15 @@ async function purchaseLottoStep(page: Page): Promise<void> {
   debug('구매 완료 단계 시작');
 
   try {
-    await page.locator('#btnBuy').click();
+    // await page.locator('#btnBuy').click();
+    await page.evaluate(() => {
+      const element = document.getElementById(`#btnBuy`);
+      if (element) {
+        element.click();
+      } else {
+        console.error(`요소 #btnBuy 찾을 수 없습니다.`);
+      }
+    });
 
     try {
       // 팝업 확인 대기
@@ -520,7 +528,7 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       // 확인 버튼 클릭
       const confirmButton = page.locator('.confirm');
       if (await confirmButton.isVisible()) {
-        // await confirmButton.click();
+        await confirmButton.click();
       }
 
       // 닫기 버튼 확인
@@ -675,7 +683,6 @@ async function buyLotto(): Promise<void> {
       {
         name: '나의 로또 번호 선택',
         execute: async (page) => await selectMyLottoNumbersStep(page),
-        skip: true,
       },
       {
         name: '구매 완료',
