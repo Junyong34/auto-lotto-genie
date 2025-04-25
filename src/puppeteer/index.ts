@@ -554,7 +554,11 @@ async function purchaseLottoStep(page: Page): Promise<void> {
   try {
     await page.click('input[value="구매하기"]');
     const elementBtn = await page.$('#btnBuy');
-
+    // await elementBtn.evaluate((el) => {
+    //   if (el.offsetWidth > 0 && el.offsetHeight > 0) {
+    //     // 요소가 보이는 상태
+    //   }
+    // });
     if (elementBtn) {
       debug('elementBtn : ' + elementBtn);
       await elementBtn.click();
@@ -564,107 +568,46 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       if (element) element.click();
     });
 
-    debug('구매 확인 팝업 기다리는 중...');
-
     try {
-      // 팝업 대기 함수 정의
-      const waitForPopup = async (
-        selector: string,
-        timeout = 10000,
-      ): Promise<boolean> => {
-        try {
-          // 1. 직접적인 대기
-          const start = Date.now();
-          debug('팝업 대기 시작');
+      // 타임아웃 시간을 10초로 늘림
+      await page.waitForSelector('#popupLayerConfirm', {
+        visible: true,
+        timeout: 10000,
+      });
 
-          await page.waitForFunction(
-            (sel) => {
-              const element = document.querySelector(sel);
-              if (!element) return false;
+      debug('popupLayerConfirm 창 확인');
+      // 그 다음 요소가 표시되는지 확인
+      const isVisible2 = await page.evaluate(() => {
+        const el = document.querySelector('#popupLayerConfirm');
+        return el && window.getComputedStyle(el).display !== 'none';
+      });
 
-              const computed = window.getComputedStyle(element);
-              return (
-                computed.display !== 'none' && computed.visibility !== 'hidden'
-              );
-            },
-            { timeout },
-            selector,
-          );
+      const isVisible = await page.evaluate(() => {
+        const el = document.querySelector(
+          '#popupLayerConfirm',
+        ) as HTMLDivElement;
+        return el && el.style.display !== 'none';
+      });
 
-          debug(`팝업 감지됨 (${Date.now() - start}ms 소요)`);
-          return true;
-        } catch (error) {
-          debug('팝업 대기 타임아웃:', error);
-          return false;
-        }
-      };
-
-      // 팝업이 표시될 때까지 대기 (최대 10초)
-      const popupAppeared = await waitForPopup('#popupLayerConfirm', 10000);
-
-      if (popupAppeared) {
-        debug('구매 확인 팝업이 나타남');
-
-        // 팝업 상태 로깅
-        const popupStatus = await page.evaluate(() => {
-          const popup = document.querySelector('#popupLayerConfirm');
-          if (!popup) return '팝업 없음';
-
-          const style = window.getComputedStyle(popup);
-          return {
-            id: popup.id,
-            display: style.display,
-            visibility: style.visibility,
-            html: popup.innerHTML,
-          };
-        });
-
-        debug('popupLayerConfirm 창 확인');
-        // 그 다음 요소가 표시되는지 확인
-        const isVisible2 = await page.evaluate(() => {
-          const el = document.querySelector('#popupLayerConfirm');
-          return el && window.getComputedStyle(el).display !== 'none';
-        });
-
-        // 확인 버튼 클릭 (여러 방식 시도)
-        const confirmButton = await page.$(
-          '#popupLayerConfirm input[value="확인"]',
-        );
-        if (confirmButton) {
-          debug('확인 버튼 클릭 시도 1');
-          await confirmButton.click().catch((e) => debug('클릭 1 실패:', e));
-        }
-
-        // 방식 2: evaluate로 클릭
+      debug('isVisible 값:' + isVisible);
+      debug('isVisible2 값:' + isVisible2);
+      if (isVisible) {
+        // 확인 버튼 클릭
         await page.evaluate(() => {
-          const btn = document.querySelector(
-            '#popupLayerConfirm input[value="확인"]',
-          ) as HTMLElement;
-          if (btn) {
-            debug('확인 버튼 클릭 시도 2');
-            btn.click();
-          }
+          const element = document.querySelector(
+            `#popupLayerConfirm input[type="button"][value="확인"]`,
+          ) as any;
+          // if (element) element.click();
         });
-
-        debug('isVisible2 값:' + isVisible2);
-        if (isVisible2) {
-          // 확인 버튼 클릭
-          await page.evaluate(() => {
-            const element = document.querySelector(
-              `#popupLayerConfirm input[type="button"][value="확인"]`,
-            ) as any;
-            // if (element) element.click();
-          });
-        }
-        // 확인 버튼을 누른 후 필요한 경우 닫기 버튼 클릭
-        const closeLayerExists = await page.$('input[name="closeLayer"]');
-        if (closeLayerExists) {
-          await page.click('input[name="closeLayer"]');
-        }
-        await hookAlert(
-          `${CONFIG.COUNT}개 복권 구매 성공! - 확인하러가기: https://dhlottery.co.kr/myPage.do?method=notScratchListView`,
-        );
       }
+      // 확인 버튼을 누른 후 필요한 경우 닫기 버튼 클릭
+      const closeLayerExists = await page.$('input[name="closeLayer"]');
+      if (closeLayerExists) {
+        await page.click('input[name="closeLayer"]');
+      }
+      await hookAlert(
+        `${CONFIG.COUNT}개 복권 구매 성공! - 확인하러가기: https://dhlottery.co.kr/myPage.do?method=notScratchListView`,
+      );
     } catch (popupError) {
       debug('확인 팝업이 나타나지 않았습니다. 구매는 진행되었을 수 있습니다.');
       await hookAlert(`구매버튼 오류 발생`);
