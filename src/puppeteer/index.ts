@@ -49,6 +49,54 @@ function debug(...args: any[]): void {
   // }
 }
 
+// 스크린샷 캡처 유틸리티 함수
+async function captureScreenshot(
+  page: Page | null,
+  name: string,
+  options: {
+    saveToFile?: boolean;
+    filePrefix?: string;
+    fullPage?: boolean;
+  } = {},
+): Promise<string | null> {
+  if (!page) return null;
+
+  const { saveToFile = false, filePrefix = 'debug', fullPage = true } = options;
+
+  try {
+    let screenshotPath: string | undefined;
+
+    // 파일 저장이 필요한 경우 경로 생성
+    if (saveToFile) {
+      const dir = filePrefix.includes('error') ? 'errors' : 'debug';
+      screenshotPath = `./src/screens-images/${dir}/${filePrefix}-${name}-${dayjs().format(
+        'YYYYMMDD-HHmmss',
+      )}.png`;
+    }
+
+    // 스크린샷 캡처
+    const screenshot = await page.screenshot({
+      path: screenshotPath,
+      fullPage,
+      encoding: 'base64',
+    });
+
+    // base64 형식으로 로그에 출력
+    const base64Data = `data:image/png;base64,${screenshot}`;
+    debug(`[${name}] 스크린샷 base64 데이터 생성됨`);
+
+    // 파일로 저장된 경우 로그 출력
+    if (saveToFile && screenshotPath) {
+      debug(`[${name}] 스크린샷 저장: ${screenshotPath}`);
+    }
+
+    return base64Data;
+  } catch (error) {
+    debug(`[${name}] 스크린샷 캡처 실패:`, error);
+    return null;
+  }
+}
+
 // 오류 발생 시 스크린샷 저장 함수
 async function captureErrorScreenshot(
   page: Page | null,
@@ -58,18 +106,16 @@ async function captureErrorScreenshot(
   if (!page) return;
 
   try {
-    const errorScreenshotPath = `./src/screens-images/errors/${stepName}-error-${dayjs().format(
-      'YYYYMMDD-HHmmss',
-    )}.png`;
-    await page.screenshot({
-      path: errorScreenshotPath,
-      fullPage: true,
+    // 에러 스크린샷 캡처 (파일 저장 + base64 로깅)
+    await captureScreenshot(page, stepName, {
+      saveToFile: true,
+      filePrefix: 'error',
     });
-    debug(`[${stepName}] 오류 발생 스크린샷 저장: ${errorScreenshotPath}`);
+
     await hookAlert(
       `[${stepName}] 오류 발생: ${
         error instanceof Error ? error.message : String(error)
-      } - 스크린샷: ${errorScreenshotPath}`,
+      }`,
     );
   } catch (screenshotError) {
     debug(`[${stepName}] 오류 발생 스크린샷 저장 실패:`, screenshotError);
@@ -338,14 +384,11 @@ async function loginStep(page: Page): Promise<void> {
         // debugger;
       });
 
-      const screenshotPath = `./src/screens-images/debug/login-debug-${dayjs().format(
-        'YYYYMMDD-HHmmss',
-      )}.png`;
-      await page.screenshot({
-        path: screenshotPath,
-        fullPage: true,
+      // 로그인 페이지 스크린샷 캡처
+      await captureScreenshot(page, '로그인_페이지', {
+        saveToFile: true,
+        filePrefix: 'login-debug',
       });
-      debug(`스크린샷 저장: ${screenshotPath}`);
     }
 
     debug('페이지 로딩 상태 확인');
@@ -576,6 +619,13 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       });
 
       debug('popupLayerConfirm 창 확인');
+
+      // 구매 과정 스크린샷 캡처
+      await captureScreenshot(page, '구매완료_팝업', {
+        saveToFile: true,
+        filePrefix: 'purchase-confirm',
+      });
+
       // 그 다음 요소가 표시되는지 확인
       const isVisible2 = await page.evaluate(() => {
         const el = document.querySelector('#popupLayerConfirm');
@@ -668,6 +718,12 @@ async function buyTest(page: Page): Promise<void> {
     });
 
     debug('popupLayerConfirm 창 확인');
+
+    // 구매 테스트 과정 스크린샷 캡처
+    await captureScreenshot(page, '구매테스트_팝업', {
+      saveToFile: true,
+      filePrefix: 'purchase-test',
+    });
   } catch (error) {
     debug('추천 번호 선택 단계에서 오류 발생:', error);
     await captureErrorScreenshot(page, '추천번호선택', error);
@@ -702,11 +758,18 @@ async function executeSteps(
       debug(`${i + 1}/${steps.length} 단계 실행: ${step.name}`);
 
       try {
+        // 단계 실행 전 스크린샷 캡처
+        await captureScreenshot(page, `${step.name}-시작`);
+
         const result = await step.execute(page, stepData);
         // 단계 실행 결과 데이터 업데이트
         if (result) {
           stepData = { ...stepData, ...result };
         }
+
+        // 단계 실행 후 스크린샷 캡처
+        await captureScreenshot(page, `${step.name}-완료`);
+
         debug(`${step.name} 단계 완료`);
       } catch (error) {
         debug(`${step.name} 단계 실패:`, error);
