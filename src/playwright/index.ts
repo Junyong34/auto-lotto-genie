@@ -204,10 +204,10 @@ async function hookSlack(message: string): Promise<void> {
 async function hookAlert(message: string): Promise<void> {
   try {
     // 슬랙으로 메시지 전송
-    await hookSlack(message);
+    // await hookSlack(message);
 
     // 텔레그램으로 메시지 전송
-    // await hookTelegram(message);
+    await hookTelegram(message);
   } catch (error) {
     console.error('알람 전송 실패:', error);
   }
@@ -664,12 +664,10 @@ async function executeSteps(
       debug(
         '디버그 모드에서는 브라우저를 자동으로 닫지 않습니다. 수동으로 닫아주세요.',
       );
-      // 디버그 모드에서는 브라우저 닫지 않음
-    } else {
-      if (context) await context.close();
-      if (browser) await browser.close();
-      debug('브라우저 종료');
     }
+    if (context) await context.close();
+    if (browser) await browser.close();
+    debug('브라우저 종료');
   }
 }
 
