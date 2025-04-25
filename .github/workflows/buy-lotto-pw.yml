@@ -60,7 +60,7 @@ jobs:
           PLAYWRIGHT_BROWSERS_PATH: /home/runner/.cache/ms-playwright
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
-          max_attempts: 2
+          timeout_minutes: 3
+          max_attempts: 1
           retry_on: error
           command: pnpm lotto:pw:headless-debug
