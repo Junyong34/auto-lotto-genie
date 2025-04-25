@@ -552,28 +552,14 @@ async function purchaseLottoStep(page: Page): Promise<void> {
   debug('구매 완료 단계 시작');
 
   try {
-    await page.click('input[value="구매하기"]');
-    const elementBtn = await page.$('#btnBuy');
-    // await elementBtn.evaluate((el) => {
-    //   if (el.offsetWidth > 0 && el.offsetHeight > 0) {
-    //     // 요소가 보이는 상태
-    //   }
-    // });
-    if (elementBtn) {
-      debug('elementBtn : ' + elementBtn);
-      await elementBtn.click();
-    }
-    await page.evaluate(() => {
-      const element = document.getElementById(`#btnBuy`);
-      if (element) element.click();
-    });
+    await page.waitForSelector('#btnBuy');
+    await page.click('#btnBuy');
+    // await page.click('input[value="구매하기"]');
+    // const elementBtn = await page.$('#btnBuy');
 
     try {
       // 타임아웃 시간을 10초로 늘림
-      await page.waitForSelector('#popupLayerConfirm', {
-        visible: true,
-        timeout: 10000,
-      });
+      await page.waitForSelector('#popupLayerConfirm');
 
       debug('popupLayerConfirm 창 확인');
       // 그 다음 요소가 표시되는지 확인
@@ -660,14 +646,6 @@ async function buyTest(page: Page): Promise<void> {
     }
 
     debug('모든 추천 번호 선택 완료');
-
-    await page.click('input[value="구매하기"]');
-    await page.waitForSelector('#popupLayerConfirm', {
-      visible: true,
-      timeout: 10000,
-    });
-
-    debug('popupLayerConfirm 창 확인');
   } catch (error) {
     debug('추천 번호 선택 단계에서 오류 발생:', error);
     await captureErrorScreenshot(page, '추천번호선택', error);
@@ -765,7 +743,6 @@ async function buyLotto(): Promise<void> {
       {
         name: '구매 완료',
         execute: async (page) => await purchaseLottoStep(page),
-        skip: true,
       },
     ];
 
