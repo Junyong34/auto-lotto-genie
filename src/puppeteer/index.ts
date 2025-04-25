@@ -67,7 +67,13 @@ async function captureErrorScreenshot(
 
     // 콘솔에 base64 스크린샷 표시
     debug(`[${stepName}] 오류 발생 스크린샷 (base64):`);
-    debug(`data:image/png;base64,${base64Screenshot}`);
+
+    // base64 길이가 긴 경우 나눠서 표시 (최대 1000자씩)
+    const chunkSize = 1000;
+    for (let i = 0; i < base64Screenshot.length; i += chunkSize) {
+      const chunk = base64Screenshot.substring(i, i + chunkSize);
+      debug(`base64_chunk_${Math.floor(i / chunkSize)}: ${chunk}`);
+    }
 
     // 파일 저장 옵션이 활성화된 경우 파일로도 저장
     if (saveToFile) {
