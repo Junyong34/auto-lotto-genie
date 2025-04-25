@@ -205,9 +205,8 @@ async function hookAlert(message: string): Promise<void> {
   try {
     // 슬랙으로 메시지 전송
     // await hookSlack(message);
-
     // 텔레그램으로 메시지 전송
-    await hookTelegram(message);
+    // await hookTelegram(message);
   } catch (error) {
     console.error('알람 전송 실패:', error);
   }
