@@ -579,9 +579,9 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       debug('isVisible2 값:' + isVisible2);
       // if (isVisible) {
       // 확인 버튼 클릭
-      const approvedBtn = await page.$('input[type="button"][value="확인"]');
+      const approvedBtn = await page.$('.confirm');
       if (approvedBtn) {
-        await page.click('input[type="button"][value="확인"]]');
+        await page.click('.confirm');
       }
       // await page.evaluate(() => {
       //   const element = document.querySelector(
