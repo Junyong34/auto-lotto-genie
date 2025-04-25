@@ -579,12 +579,16 @@ async function purchaseLottoStep(page: Page): Promise<void> {
       debug('isVisible2 값:' + isVisible2);
       // if (isVisible) {
       // 확인 버튼 클릭
-      await page.evaluate(() => {
-        const element = document.querySelector(
-          `input[type="button"][value="확인"]`,
-        ) as any;
-        if (element) element.click();
-      });
+      const approvedBtn = await page.$('input[type="button"][value="확인"]');
+      if (approvedBtn) {
+        await page.click('input[type="button"][value="확인"]]');
+      }
+      // await page.evaluate(() => {
+      //   const element = document.querySelector(
+      //     `input[type="button"][value="확인"]`,
+      //   ) as any;
+      //   if (element) element.click();
+      // });
       // }
       // 확인 버튼을 누른 후 필요한 경우 닫기 버튼 클릭
       const closeLayerExists = await page.$('input[name="closeLayer"]');
