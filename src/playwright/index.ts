@@ -456,7 +456,14 @@ async function selectRecommendedNumbersStep(page: Page): Promise<void> {
       }
 
       // 선택 완료 후 확인 버튼 클릭
-      await page.locator('#btnSelectNum').click();
+      await page.evaluate(() => {
+        const element = document.getElementById(`#btnSelectNum`);
+        if (element) {
+          element.click();
+        } else {
+          console.error(`요소 #btnSelectNum 찾을 수 없습니다.`);
+        }
+      });
       debug(`${i + 1}번째 세트 선택 완료`);
     }
 
