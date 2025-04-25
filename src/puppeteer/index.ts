@@ -660,6 +660,14 @@ async function buyTest(page: Page): Promise<void> {
     }
 
     debug('모든 추천 번호 선택 완료');
+
+    await page.click('input[value="구매하기"]');
+    await page.waitForSelector('#popupLayerConfirm', {
+      visible: true,
+      timeout: 10000,
+    });
+
+    debug('popupLayerConfirm 창 확인');
   } catch (error) {
     debug('추천 번호 선택 단계에서 오류 발생:', error);
     await captureErrorScreenshot(page, '추천번호선택', error);
@@ -757,6 +765,7 @@ async function buyLotto(): Promise<void> {
       {
         name: '구매 완료',
         execute: async (page) => await purchaseLottoStep(page),
+        skip: true,
       },
     ];
 
