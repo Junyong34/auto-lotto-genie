@@ -424,7 +424,14 @@ async function selectRecommendedNumbersStep(page: Page): Promise<void> {
     debug('추천받은 로또 번호로 선택 시작', recommendNumbers);
     // 수동 선택 모드로 전환
     // await page.locator('#num1').waitFor({ state: 'visible', timeout: 10000 });
-    await page.locator('#num1').click();
+    await page.evaluate(() => {
+      const element = document.getElementById(`#num1`);
+      if (element) {
+        element.click();
+      } else {
+        console.error(`요소 #num1를 찾을 수 없습니다.`);
+      }
+    });
 
     // 추천받은 번호 배열 순회 (최대 5개 세트)
     for (let i = 0; i < recommendNumbers.length && i < 5; i++) {
