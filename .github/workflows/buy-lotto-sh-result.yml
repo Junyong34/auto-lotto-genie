@@ -1,8 +1,8 @@
-name: 자동 로또 구매(SH)
+name: 자동 로또 구매결과 pw (SH)
 
 on:
   schedule:
-    # 매주 수요일 오전 11시에 실행 (UTC+9, 한국 시간)
+    # 매주 월요일 오전 11시에 실행 (UTC+9, 한국 시간)
     # cron은 UTC 시간을 기준으로 하므로 한국 시간 오전 11시는 UTC 02:00
     - cron: '0 0 * * 3'
   workflow_dispatch: # 수동 실행 가능하도록 설정
@@ -38,25 +38,11 @@ jobs:
       - name: 의존성 설치
         run: pnpm install
 
-      - name: Chrome 설치
-        run: |
-          # 1) Chrome for Testing 124 다운로드 & 압축 해제
-          wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chrome-linux64.zip
-          unzip chrome-linux64.zip
+      - name: Playwright 브라우저 설치
+        run: npx playwright install --with-deps chromium
 
-          # 2) 전체 폴더를 /opt/chrome-124 로 이동 (리소스 포함)
-          sudo mv chrome-linux64 /opt/chrome-124
-          sudo chmod -R a+rX /opt/chrome-124
-
-          # 3) Chromedriver 다운로드 & 설치
-          wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chromedriver-linux64.zip
-          unzip chromedriver-linux64.zip
-          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
-          sudo chmod +x /usr/local/bin/chromedriver
-
-          # 4) 환경 변수 등록
-          echo "CHROME_PATH=/opt/chrome-124/chrome" >> $GITHUB_ENV
-          echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
+      - name: Playwright 환경 확인
+        run: npx playwright install-deps chromium && ls -la /home/runner/.cache/ms-playwright/
 
       - name: 로또 구매 실행
         env:
@@ -71,11 +57,10 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          PUPPETEER_TIMEOUT: 30000
-          PUPPETEER_EXECUTABLE_PATH: ${{ env.CHROME_PATH }}
+          PLAYWRIGHT_BROWSERS_PATH: /home/runner/.cache/ms-playwright
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
-          max_attempts: 2
+          timeout_minutes: 3
+          max_attempts: 1
           retry_on: error
           command: pnpm lotto:pw-re:headless-debug
