@@ -1,0 +1,81 @@
+name: 자동 로또 구매(SH)
+
+on:
+  schedule:
+    # 매주 수요일 오전 11시에 실행 (UTC+9, 한국 시간)
+    # cron은 UTC 시간을 기준으로 하므로 한국 시간 오전 11시는 UTC 02:00
+    - cron: '0 0 * * 3'
+  workflow_dispatch: # 수동 실행 가능하도록 설정
+
+jobs:
+  buy-lotto:
+    name: 자동 로또 구매 실행
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v3
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: pnpm 설치
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+          run_install: false
+
+      - name: pnpm 캐시 활성화
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: 의존성 설치
+        run: pnpm install
+
+      - name: Chrome 설치
+        run: |
+          # 1) Chrome for Testing 124 다운로드 & 압축 해제
+          wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chrome-linux64.zip
+          unzip chrome-linux64.zip
+
+          # 2) 전체 폴더를 /opt/chrome-124 로 이동 (리소스 포함)
+          sudo mv chrome-linux64 /opt/chrome-124
+          sudo chmod -R a+rX /opt/chrome-124
+
+          # 3) Chromedriver 다운로드 & 설치
+          wget https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.207/linux64/chromedriver-linux64.zip
+          unzip chromedriver-linux64.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+
+          # 4) 환경 변수 등록
+          echo "CHROME_PATH=/opt/chrome-124/chrome" >> $GITHUB_ENV
+          echo "CHROMEDRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
+
+      - name: 로또 구매 실행
+        env:
+          LOTTO_USER_ID: ${{ secrets.LOTTO_USER_ID_SH }}
+          LOTTO_USER_PW: ${{ secrets.LOTTO_USER_PW_SH }}
+          LOTTO_COUNT: ${{ secrets.LOTTO_COUNT || 5 }}
+          SLACK_API_URL: ${{ secrets.SLACK_API_URL }}
+          CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PUPPETEER_TIMEOUT: 30000
+          PUPPETEER_EXECUTABLE_PATH: ${{ env.CHROME_PATH }}
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          retry_on: error
+          command: pnpm lotto:pw-re:headless-debug
