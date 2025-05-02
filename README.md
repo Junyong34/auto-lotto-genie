@@ -6,7 +6,8 @@
 
 - AI(Google Gemini, OpenAI)를 활용한 로또 번호 추천
 - 동행복권 사이트 자동 로그인 및 구매
-- 구매 결과 Slack 알림
+- 구매 결과 Slack 또는 Telegram 알림 전송
+- 로또 당첨 결과 자동 확인 및 알림
 - 과거 당첨 번호 데이터 분석 및 활용
 
 ## 🚀 시작하기
@@ -17,7 +18,7 @@
 - PNPM 패키지 관리자
 - 동행복권 계정
 - Google Gemini API 키 또는 OpenAI API 키
-- (선택 사항) Slack Webhook URL
+- (선택 사항) Slack Webhook URL 또는 Telegram Bot Token
 
 ### 설치 방법
 
@@ -57,6 +58,10 @@ OPENAI_API_KEY=your_openai_api_key
 # Slack 알림 설정 (선택 사항)
 SLACK_API_URL=your_slack_webhook_url
 
+# Telegram 알림 설정 (선택 사항)
+TELEGRAM_TOKEN=your_telegram_bot_token
+TELEGRAM_CHAT_ID=your_telegram_chat_id
+
 # 크롬 브라우저 경로 (필요시 설정)
 # CHROME_PATH=/path/to/chrome
 ```
@@ -67,22 +72,34 @@ SLACK_API_URL=your_slack_webhook_url
 
 ```bash
 # 일반 모드
-pnpm run lotto
+pnpm run lotto:pw
 
 # 헤드리스 모드 (브라우저 화면 표시 없음)
-pnpm run lotto:headless
+pnpm run lotto:pw:headless
 
 # 디버그 모드 (상세 로그 출력)
-pnpm run lotto:debug
+pnpm run lotto:pw:debug
 
 # 헤드리스 + 디버그 모드
-pnpm run lotto:headless-debug
+pnpm run lotto:pw:headless-debug
 
 # 로또 데이터 분석만 실행
 pnpm run lotto:data
 
 # AI 추천 테스트
 pnpm run lotto:ai
+
+# 당첨 결과 확인
+pnpm run lotto:pw-re
+
+# 당첨 결과 확인 (헤드리스 모드)
+pnpm run lotto:pw-re:headless
+
+# 당첨 결과 확인 (디버그 모드)
+pnpm run lotto:pw-re:debug
+
+# 당첨 결과 확인 (헤드리스 + 디버그 모드)
+pnpm run lotto:pw-re:headless-debug
 ```
 
 ## 📁 프로젝트 구조
@@ -96,8 +113,11 @@ auto-lotto-genie/
 │   ├── config/              # 설정 파일 디렉토리
 │   ├── controllers/         # 컨트롤러
 │   ├── data/                # 데이터 처리 관련 로직
+│   ├── playwright/          # Playwright 기반 웹 자동화 로직
+│   │   ├── index.ts         # 로또 구매 메인 로직
+│   │   └── detailResult.ts  # 로또 결과 확인 및 알림 로직
 │   ├── prompts/             # AI 프롬프트 정의
-│   ├── puppeteer/           # 웹 자동화 관련 로직
+│   ├── puppeteer/           # Puppeteer 기반 웹 자동화 로직 (레거시)
 │   ├── screens-images/      # 스크린샷 저장 디렉토리
 │   ├── tests/               # 테스트 코드
 │   ├── types/               # 타입 정의
@@ -113,7 +133,8 @@ auto-lotto-genie/
 ## 🔧 기술 스택
 
 - TypeScript
-- Puppeteer (웹 자동화)
+- Playwright (웹 자동화)
+- Puppeteer (웹 자동화, 레거시)
 - Google Generative AI (Gemini)
 - OpenAI API
 - Axios (HTTP 요청)
