@@ -63,4 +63,4 @@ jobs:
           timeout_minutes: 3
           max_attempts: 1
           retry_on: error
-          command: pnpm lotto:pw:headless-debug
+          command: pnpm lotto:pw:headless-debug2

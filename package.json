@@ -15,6 +15,7 @@
     "lotto:pw:headless": "ts-node src/playwright/index.ts --headless",
     "lotto:pw:debug": "ts-node src/playwright/index.ts --debug",
     "lotto:pw:headless-debug": "ts-node src/playwright/index.ts --headless --debug",
+    "lotto:pw:headless-debug2": "ts-node src/playwright/mathematicalCalculations.ts --headless --debug",
     "lotto:pw-re": "ts-node src/playwright/detailResult.ts",
     "lotto:pw-re:headless": "ts-node src/playwright/detailResult.ts --headless",
     "lotto:pw-re:debug": "ts-node src/playwright/detailResult.ts --debug",
