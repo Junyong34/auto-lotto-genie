@@ -426,7 +426,7 @@ async function navigateToLottoReslutPageStep(page: Page): Promise<void> {
     const isWin = drawStatus?.trim() === '당첨';
     await hookAlert(
       isWin
-        ? '🎉 축하드립니다! 당첨되셨습니다!' + '당첨금 : ' + prize
+        ? '🎉 축하드립니다! 당첨되셨습니다!' + ' 당첨금 : ' + prize + '일까? 아닐까?'
         : '😅 아쉽게도 낙첨되었습니다. 다음주에 재도전하세요!',
     );
   } catch (error) {
