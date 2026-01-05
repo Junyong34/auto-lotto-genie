@@ -273,7 +273,7 @@ async function loginStep(page: Page): Promise<void> {
 
   try {
     debug('로그인 페이지로 이동');
-    await page.goto('https://dhlottery.co.kr/user.do?method=login');
+    await page.goto('https://dhlottery.co.kr/login');
 
     // 디버그 모드 처리
     if (debugMode) {
@@ -317,7 +317,7 @@ async function loginStep(page: Page): Promise<void> {
 
     await Promise.all([
       //   page.waitForNavigation({ waitUntil: 'networkidle' }),
-      page.locator('form[name="jform"] .btn_common.lrg.blu').click(),
+      page.locator('form[name="loginForm"] #btnLogin').click(),
     ]);
     debug('로그인 완료');
   } catch (error) {
@@ -336,19 +336,18 @@ async function checkBalanceStep(
   try {
     debug('메인 페이지로 이동하여 예치금 확인');
     await page.goto(
-      'https://dhlottery.co.kr/common.do?method=main&mainMode=default',
+      'https://dhlottery.co.kr/mypage/home',
     );
-
     // 사용자 이름 추출
     const userName =
       (await page
-        .locator('ul.information li:first-child strong')
+        .locator('#divUserNm')
         .textContent()) || '';
 
     // 예치금 추출
     const balanceText =
       (await page
-        .locator('ul.information li.money a[href*="depositListView"] strong')
+        .locator('#divCrntEntrsAmt')
         .textContent()) || '';
 
     const balance = parseInt(balanceText.replace(/[,원]/g, ''));
@@ -385,29 +384,49 @@ async function navigateToLottoReslutPageStep(page: Page): Promise<void> {
   try {
     // 로또 구매결과 페이지
     await page.goto(
-      'https://dhlottery.co.kr/myPage.do?method=lottoBuyListView',
+      'https://dhlottery.co.kr/mypage/mylotteryledger',
     );
 
     // 1주일 버튼 클릭
-    await page.locator('.period .btn_common.form').nth(1).click();
+    await page.getByRole('button', { name: '최근 1주일' }).click();
     debug('1주일 기간 선택 완료');
 
     // 조회 버튼 클릭
-    await page.locator('#submit_btn').click();
+    await page.locator('#btnSrch').click();
     debug('조회 버튼 클릭 완료');
 
-    // iframe 내부의 첫번째 tr에서 날짜와 당첨여부 데이터 가져오기
-    const frame = await page.frameLocator('#lottoBuyList');
-    const firstRow = await frame.locator('tbody tr').first();
-    const date = await firstRow.locator('td').first().textContent();
-    const drawStatus = await firstRow.locator('td').nth(5).textContent();
+    const firstRow = await page.locator('#winning-history-list .whl-body .whl-row').first();
 
+// 구입일자
+    const date = await firstRow.locator('.col-date1 .whl-txt').textContent();
+
+// 당첨결과
+    const drawStatus = await firstRow.locator('.col-result .whl-txt').textContent();
+
+// 추가로 필요하다면 다른 정보도 가져올 수 있습니다:
+// 복권명
+    const lotteryName = await firstRow.locator('.col-name .whl-txt').textContent();
+
+// 회차
+    const round = await firstRow.locator('.col-th .whl-txt').textContent();
+
+// 선택번호
+    const numbers = await firstRow.locator('.col-num .whl-txt').textContent();
+
+// 구입매수
+    const quantity = await firstRow.locator('.col-ea .whl-txt').textContent();
+
+// 당첨금
+    const prize = await firstRow.locator('.col-am .whl-txt').textContent();
+
+// 추첨일자
+    const drawDate = await firstRow.locator('.col-date2 .whl-txt').textContent();
     // 결과 출력
     debug(`구매 날짜: ${date?.trim()}, 당첨 상태: ${drawStatus?.trim()}`);
     const isWin = drawStatus?.trim() === '당첨';
     await hookAlert(
       isWin
-        ? '🎉 축하드립니다! 당첨되셨습니다!'
+        ? '🎉 축하드립니다! 당첨되셨습니다!' + '당첨금 : ' + prize
         : '😅 아쉽게도 낙첨되었습니다. 다음주에 재도전하세요!',
     );
   } catch (error) {
