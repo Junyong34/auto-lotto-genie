@@ -274,7 +274,7 @@ async function loginStep(page: Page): Promise<void> {
 
   try {
     debug('로그인 페이지로 이동');
-    await page.goto('https://dhlottery.co.kr/user.do?method=login');
+    await page.goto('https://dhlottery.co.kr/login');
 
     // 디버그 모드 처리
     if (debugMode) {
@@ -318,7 +318,7 @@ async function loginStep(page: Page): Promise<void> {
 
     await Promise.all([
       //   page.waitForNavigation({ waitUntil: 'networkidle' }),
-      page.locator('form[name="jform"] .btn_common.lrg.blu').click(),
+      page.locator('form[name="loginForm"] #btnLogin').click(),
     ]);
     debug('로그인 완료');
   } catch (error) {
@@ -337,19 +337,19 @@ async function checkBalanceStep(
   try {
     debug('메인 페이지로 이동하여 예치금 확인');
     await page.goto(
-      'https://dhlottery.co.kr/common.do?method=main&mainMode=default',
+      'https://dhlottery.co.kr/mypage/home',
     );
 
     // 사용자 이름 추출
     const userName =
       (await page
-        .locator('ul.information li:first-child strong')
+        .locator('#divUserNm')
         .textContent()) || '';
 
     // 예치금 추출
     const balanceText =
       (await page
-        .locator('ul.information li.money a[href*="depositListView"] strong')
+        .locator('#divCrntEntrsAmt')
         .textContent()) || '';
 
     const balance = parseInt(balanceText.replace(/[,원]/g, ''));
