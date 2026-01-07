@@ -349,7 +349,7 @@ async function checkBalanceStep(
     // 예치금 추출
     const balanceText =
       (await page
-        .locator('#divCrntEntrsAmt')
+        .locator('#totalAmt')
         .textContent()) || '';
 
     const balance = parseInt(balanceText.replace(/[,원]/g, ''));
