@@ -347,27 +347,27 @@ async function checkBalanceStep(
     // 예치금 추출
     const balanceText =
       (await page
-        .locator('#totalAmt')
+        .locator('#divCrntEntrsAmt')
         .textContent()) || '';
 
     const balance = parseInt(balanceText.replace(/[,원]/g, ''));
     debug(`사용자: ${userName.replace('*', '*')}, 예치금: ${balance}원`);
-    if (balance < 5000) {
-      await hookAlert(
-        `⚠️ 예치금 부족 알림\n로그인 사용자: ${userName.replace(
-          '*',
-          '*',
-        )}\n현재 예치금: ${balance}원\n예치금을 충전해주세요!\n충전하기 👉 https://dhlottery.co.kr/payment.do?method=payment`,
-      );
-    } else {
-      await hookAlert(`로그인 사용자: ${userName.replace('*', '*')}`);
-    }
-
-    if (1000 * CONFIG.COUNT > balance) {
-      throw new Error(
-        '예치금이 부족합니다! 충전해주세요! - https://dhlottery.co.kr/payment.do?method=payment',
-      );
-    }
+    // if (balance < 5000) {
+    //   await hookAlert(
+    //     `⚠️ 예치금 부족 알림\n로그인 사용자: ${userName.replace(
+    //       '*',
+    //       '*',
+    //     )}\n현재 예치금: ${balance}원\n예치금을 충전해주세요!\n충전하기 👉 https://dhlottery.co.kr/payment.do?method=payment`,
+    //   );
+    // } else {
+    //   await hookAlert(`로그인 사용자: ${userName.replace('*', '*')}`);
+    // }
+    //
+    // if (1000 * CONFIG.COUNT > balance) {
+    //   throw new Error(
+    //     '예치금이 부족합니다! 충전해주세요! - https://dhlottery.co.kr/payment.do?method=payment',
+    //   );
+    // }
 
     return { userName, balance };
   } catch (error) {

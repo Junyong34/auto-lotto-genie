@@ -350,7 +350,7 @@ async function checkBalanceStep(
     // 예치금 추출
     const balanceText =
       (await page
-        .locator('#totalAmt')
+        .locator('#divCrntEntrsAmt')
         .textContent()) || '';
 
 
