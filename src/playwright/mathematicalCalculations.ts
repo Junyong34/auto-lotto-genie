@@ -341,6 +341,7 @@ async function checkBalanceStep(
       'https://dhlottery.co.kr/mypage/home',
     );
 
+    await page.waitForSelector('#divCrntEntrsAmt');
     // 사용자 이름 추출
     const userName =
       (await page
