@@ -341,7 +341,11 @@ async function checkBalanceStep(
       'https://dhlottery.co.kr/mypage/home',
     );
 
-    await page.waitForSelector('#divCrntEntrsAmt');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('#divCrntEntrsAmt');
+      return el && el.textContent && el.textContent.trim().length > 0;
+    });
+
     // 사용자 이름 추출
     const userName =
       (await page
