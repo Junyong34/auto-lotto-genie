@@ -347,10 +347,27 @@ async function checkBalanceStep(
         .textContent()) || '';
 
     // 예치금 추출
-    const balanceText =
-      (await page
-        .locator('#totalAmt')
-        .textContent()) || '';
+    let balanceText = '';
+    let retries = 0;
+    const maxRetries = 10;
+
+    while (retries < maxRetries) {
+      balanceText = (await page.locator('#totalAmt').textContent()) || '';
+
+      // 숫자가 포함되어 있고 "원"이 포함되어 있으면 성공
+      if (balanceText.trim() && balanceText.includes('원') && /\d/.test(balanceText)) {
+        debug('예치금 정보 로드 성공:', balanceText);
+        break;
+      }
+
+      debug(`예치금 정보 대기 중... (${retries + 1}/${maxRetries})`);
+      await page.waitForTimeout(1000); // 1초 대기
+      retries++;
+    }
+
+    if (!balanceText.trim() || !balanceText.includes('원') || !/\d/.test(balanceText)) {
+      throw new Error('예치금 정보를 가져올 수 없습니다.');
+    }
 
     const balance = parseInt(balanceText.replace(/[,원]/g, ''));
     debug(`사용자: ${userName.replace('*', '*')}, 예치금: ${balance}원`);
