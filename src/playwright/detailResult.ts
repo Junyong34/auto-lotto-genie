@@ -405,7 +405,7 @@ async function navigateToLottoReslutPageStep(page: Page): Promise<void> {
     );
 
     // 1주일 버튼 클릭
-    await page.getByRole('button', { name: '최근 1주일' }).click();
+    await page.getByRole('button', { name: '1주일' }).click();
     debug('1주일 기간 선택 완료');
 
     // 조회 버튼 클릭
